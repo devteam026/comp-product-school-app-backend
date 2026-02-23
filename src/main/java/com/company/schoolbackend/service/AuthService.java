@@ -2,6 +2,7 @@ package com.company.schoolbackend.service;
 
 import com.company.schoolbackend.dto.AuthLoginRequest;
 import com.company.schoolbackend.dto.AuthLoginResponse;
+import com.company.schoolbackend.dto.AuthRegisterRequest;
 import com.company.schoolbackend.dto.UserProfile;
 import com.company.schoolbackend.entity.AppUser;
 import com.company.schoolbackend.entity.SessionToken;
@@ -51,28 +52,40 @@ public class AuthService {
             throw new IllegalArgumentException("Invalid credentials");
         }
 
-        String classCode = null;
-        if (role == UserRole.teacher) {
-            classCode = request.getClassCode();
-            if (classCode == null || classCode.isBlank()) {
-                throw new IllegalArgumentException("Select a class assigned to this teacher");
-            }
-            boolean allowed = teacherClassRepository.existsByTeacherUserIdAndClassCode(user.getId(), classCode);
-            if (!allowed) {
-                throw new IllegalArgumentException("Select a class assigned to this teacher");
-            }
-        }
-
         String token = UUID.randomUUID().toString().replace("-", "");
         SessionToken sessionToken = new SessionToken();
         sessionToken.setUserId(user.getId());
         sessionToken.setToken(token);
         sessionToken.setCreatedAt(OffsetDateTime.now());
-        sessionToken.setExpiresAt(OffsetDateTime.now().plusDays(7));
+        sessionToken.setExpiresAt(OffsetDateTime.now().plusDays(1));
         sessionTokenRepository.save(sessionToken);
 
-        UserProfile profile = new UserProfile(user.getUsername(), user.getDisplayName(), role.name(), classCode);
+        UserProfile profile = new UserProfile(user.getUsername(), user.getDisplayName(), role.name(), null);
         return new AuthLoginResponse(true, token, profile);
+    }
+
+    public UserProfile register(AuthRegisterRequest request) {
+        if (request == null || request.getUsername() == null || request.getPassword() == null
+                || request.getRole() == null) {
+            throw new IllegalArgumentException("Missing fields");
+        }
+        String username = request.getUsername().trim().toLowerCase(Locale.ROOT);
+        if (username.isEmpty()) {
+            throw new IllegalArgumentException("Username required");
+        }
+        if (appUserRepository.findByUsername(username).isPresent()) {
+            throw new IllegalArgumentException("Username already exists");
+        }
+        UserRole role = UserRole.valueOf(request.getRole().trim().toLowerCase(Locale.ROOT));
+        AppUser user = new AppUser();
+        user.setUsername(username);
+        user.setDisplayName(request.getDisplayName() == null ? username : request.getDisplayName().trim());
+        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        user.setRole(role);
+        user.setActive(true);
+        user.setCreatedAt(OffsetDateTime.now());
+        AppUser saved = appUserRepository.save(user);
+        return new UserProfile(saved.getUsername(), saved.getDisplayName(), saved.getRole().name(), null);
     }
 
     public UserProfile verify(String token) {

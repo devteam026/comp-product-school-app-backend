@@ -2,8 +2,10 @@ package com.company.schoolbackend.controller;
 
 import com.company.schoolbackend.dto.AuthLoginRequest;
 import com.company.schoolbackend.dto.AuthLoginResponse;
+import com.company.schoolbackend.dto.AuthRegisterRequest;
 import com.company.schoolbackend.dto.UserProfile;
 import com.company.schoolbackend.service.AuthService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,9 +19,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/auth")
 public class AuthController {
     private final AuthService authService;
+    private final boolean registrationEnabled;
 
-    public AuthController(AuthService authService) {
+    public AuthController(
+            AuthService authService,
+            @Value("${school.registration.enabled:true}") boolean registrationEnabled
+    ) {
         this.authService = authService;
+        this.registrationEnabled = registrationEnabled;
     }
 
     @PostMapping("/login")
@@ -29,6 +36,21 @@ public class AuthController {
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(java.util.Map.of("error", ex.getMessage()));
+        }
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody AuthRegisterRequest request) {
+        if (!registrationEnabled) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(java.util.Map.of("error", "Registration disabled"));
+        }
+        try {
+            UserProfile profile = authService.register(request);
+            return ResponseEntity.ok(profile);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(java.util.Map.of("error", ex.getMessage()));
         }
     }
