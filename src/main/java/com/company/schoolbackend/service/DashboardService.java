@@ -55,6 +55,7 @@ public class DashboardService {
                 : attendanceRecordRepository.findByAttendanceDateAndStudentIdIn(today, studentIds);
         int present = (int) todayRecords.stream().filter(r -> r.getStatus() == AttendanceStatus.Present).count();
         int absent = todayRecords.size() - present;
+        int notRecorded = Math.max(0, studentIds.size() - todayRecords.size());
 
         String month = today.toString().substring(0, 7);
         Set<String> paidStudentIds = paymentRepository.findByMonthsContains(month)
@@ -96,7 +97,7 @@ public class DashboardService {
         response.setTotalStudents(total);
         response.setMaleCount(male);
         response.setFemaleCount(female);
-        response.setAttendanceToday(new AttendanceSummary(present, absent));
+        response.setAttendanceToday(new AttendanceSummary(present, absent, notRecorded));
         response.setFeeStats(new FeeStats(paidCount, unpaidCount, freeCount));
         response.setDailyAttendance(daily);
         response.setClassAttendance(classAttendance);

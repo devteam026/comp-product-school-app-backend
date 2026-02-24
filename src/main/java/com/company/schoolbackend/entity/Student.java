@@ -65,6 +65,9 @@ public class Student {
     @Column(name = "fee_type", nullable = false)
     private FeeType feeType;
 
+    @Column(name = "profile_photo_key")
+    private String profilePhotoKey;
+
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
@@ -205,6 +208,14 @@ public class Student {
 
     public void setFeeType(FeeType feeType) {
         this.feeType = feeType;
+    }
+
+    public String getProfilePhotoKey() {
+        return profilePhotoKey;
+    }
+
+    public void setProfilePhotoKey(String profilePhotoKey) {
+        this.profilePhotoKey = profilePhotoKey;
     }
 
     public OffsetDateTime getCreatedAt() {

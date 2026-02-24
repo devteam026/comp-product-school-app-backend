@@ -83,6 +83,9 @@ public class StudentService {
         FeeType feeTypeValue = parseEnum(FeeType.class, request.getFeeType());
         student.setStatus(statusValue == null ? StudentStatus.Active : statusValue);
         student.setFeeType(feeTypeValue == null ? FeeType.Paid : feeTypeValue);
+        if (request.getProfilePhotoKey() != null && !request.getProfilePhotoKey().isBlank()) {
+            student.setProfilePhotoKey(request.getProfilePhotoKey().trim());
+        }
         student.setUpdatedAt(OffsetDateTime.now());
 
         Student saved = studentRepository.save(student);
@@ -120,6 +123,7 @@ public class StudentService {
         response.setParentOccupation(student.getParentOccupation());
         response.setStatus(student.getStatus().name());
         response.setFeeType(student.getFeeType().name());
+        response.setProfilePhotoKey(student.getProfilePhotoKey());
         List<String> entries = new ArrayList<>();
         for (StudentHistory item : history) {
             entries.add(item.getEntry());
