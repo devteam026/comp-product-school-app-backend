@@ -17,6 +17,7 @@ public class StudentUpsertRequest {
     private String parentOccupation;
     private String status;
     private String feeType;
+    private String profilePhotoKey;
 
     public String getId() {
         return id;
@@ -144,5 +145,13 @@ public class StudentUpsertRequest {
 
     public void setFeeType(String feeType) {
         this.feeType = feeType;
+    }
+
+    public String getProfilePhotoKey() {
+        return profilePhotoKey;
+    }
+
+    public void setProfilePhotoKey(String profilePhotoKey) {
+        this.profilePhotoKey = profilePhotoKey;
     }
 }

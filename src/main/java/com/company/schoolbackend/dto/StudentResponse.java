@@ -22,6 +22,7 @@ public class StudentResponse {
     private String status;
     private String feeType;
     private List<String> history = new ArrayList<>();
+    private String profilePhotoKey;
 
     public String getId() {
         return id;
@@ -165,5 +166,13 @@ public class StudentResponse {
 
     public void setHistory(List<String> history) {
         this.history = history;
+    }
+
+    public String getProfilePhotoKey() {
+        return profilePhotoKey;
+    }
+
+    public void setProfilePhotoKey(String profilePhotoKey) {
+        this.profilePhotoKey = profilePhotoKey;
     }
 }

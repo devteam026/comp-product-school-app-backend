@@ -1,16 +1,24 @@
 package com.company.schoolbackend.dto;
 
-public class AttendanceSummary {
+public class ClassAttendancePoint {
+    private String classCode;
     private int present;
     private int absent;
-    private int notRecorded;
 
-    public AttendanceSummary() {}
+    public ClassAttendancePoint() {}
 
-    public AttendanceSummary(int present, int absent, int notRecorded) {
+    public ClassAttendancePoint(String classCode, int present, int absent) {
+        this.classCode = classCode;
         this.present = present;
         this.absent = absent;
-        this.notRecorded = notRecorded;
+    }
+
+    public String getClassCode() {
+        return classCode;
+    }
+
+    public void setClassCode(String classCode) {
+        this.classCode = classCode;
     }
 
     public int getPresent() {
@@ -27,13 +35,5 @@ public class AttendanceSummary {
 
     public void setAbsent(int absent) {
         this.absent = absent;
-    }
-
-    public int getNotRecorded() {
-        return notRecorded;
-    }
-
-    public void setNotRecorded(int notRecorded) {
-        this.notRecorded = notRecorded;
     }
 }
