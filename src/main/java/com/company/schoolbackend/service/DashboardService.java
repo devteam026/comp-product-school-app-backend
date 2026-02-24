@@ -1,6 +1,7 @@
 package com.company.schoolbackend.service;
 
 import com.company.schoolbackend.dto.AttendanceSummary;
+import com.company.schoolbackend.dto.ClassAttendancePoint;
 import com.company.schoolbackend.dto.DailyAttendancePoint;
 import com.company.schoolbackend.dto.DashboardResponse;
 import com.company.schoolbackend.dto.FeeStats;
@@ -16,6 +17,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
@@ -47,7 +49,10 @@ public class DashboardService {
         int female = (int) students.stream().filter(s -> s.getGender() == Gender.Female).count();
 
         LocalDate today = LocalDate.now();
-        List<AttendanceRecord> todayRecords = attendanceRecordRepository.findByAttendanceDate(today);
+        List<String> studentIds = students.stream().map(Student::getId).collect(Collectors.toList());
+        List<AttendanceRecord> todayRecords = studentIds.isEmpty()
+                ? new ArrayList<>()
+                : attendanceRecordRepository.findByAttendanceDateAndStudentIdIn(today, studentIds);
         int present = (int) todayRecords.stream().filter(r -> r.getStatus() == AttendanceStatus.Present).count();
         int absent = todayRecords.size() - present;
 
@@ -62,11 +67,30 @@ public class DashboardService {
         List<DailyAttendancePoint> daily = new ArrayList<>();
         for (int i = 4; i >= 0; i -= 1) {
             LocalDate date = today.minusDays(i);
-            List<AttendanceRecord> records = attendanceRecordRepository.findByAttendanceDate(date);
+            List<AttendanceRecord> records = studentIds.isEmpty()
+                    ? new ArrayList<>()
+                    : attendanceRecordRepository.findByAttendanceDateAndStudentIdIn(date, studentIds);
             int p = (int) records.stream().filter(r -> r.getStatus() == AttendanceStatus.Present).count();
             int a = records.size() - p;
             daily.add(new DailyAttendancePoint(shortDay(date.getDayOfWeek()), p, a));
         }
+
+        Map<String, List<Student>> byClass = students.stream()
+                .collect(Collectors.groupingBy(Student::getClassCode));
+        List<ClassAttendancePoint> classAttendance = new ArrayList<>();
+        List<ClassAttendancePoint> classStudentCounts = new ArrayList<>();
+        for (var entry : byClass.entrySet()) {
+            List<String> ids = entry.getValue().stream().map(Student::getId).collect(Collectors.toList());
+            List<AttendanceRecord> records = ids.isEmpty()
+                    ? new ArrayList<>()
+                    : attendanceRecordRepository.findByAttendanceDateAndStudentIdIn(today, ids);
+            int p = (int) records.stream().filter(r -> r.getStatus() == AttendanceStatus.Present).count();
+            int a = records.size() - p;
+            classAttendance.add(new ClassAttendancePoint(entry.getKey(), p, a));
+            classStudentCounts.add(new ClassAttendancePoint(entry.getKey(), entry.getValue().size(), 0));
+        }
+        classAttendance.sort((a, b) -> a.getClassCode().compareToIgnoreCase(b.getClassCode()));
+        classStudentCounts.sort((a, b) -> a.getClassCode().compareToIgnoreCase(b.getClassCode()));
 
         DashboardResponse response = new DashboardResponse();
         response.setTotalStudents(total);
@@ -75,6 +99,8 @@ public class DashboardService {
         response.setAttendanceToday(new AttendanceSummary(present, absent));
         response.setFeeStats(new FeeStats(paidCount, unpaidCount, freeCount));
         response.setDailyAttendance(daily);
+        response.setClassAttendance(classAttendance);
+        response.setClassStudentCounts(classStudentCounts);
         return response;
     }
 
