@@ -33,6 +33,18 @@ public class SchoolProfile {
     @Column(name = "school_url")
     private String schoolUrl;
 
+    @Column(name = "sidebar_bg")
+    private String sidebarBg;
+
+    @Column(name = "brand_name")
+    private String brandName;
+
+    @Column(name = "app_title")
+    private String appTitle;
+
+    @Column(name = "app_description")
+    private String appDescription;
+
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 
@@ -98,6 +110,38 @@ public class SchoolProfile {
 
     public void setSchoolUrl(String schoolUrl) {
         this.schoolUrl = schoolUrl;
+    }
+
+    public String getSidebarBg() {
+        return sidebarBg;
+    }
+
+    public void setSidebarBg(String sidebarBg) {
+        this.sidebarBg = sidebarBg;
+    }
+
+    public String getBrandName() {
+        return brandName;
+    }
+
+    public void setBrandName(String brandName) {
+        this.brandName = brandName;
+    }
+
+    public String getAppTitle() {
+        return appTitle;
+    }
+
+    public void setAppTitle(String appTitle) {
+        this.appTitle = appTitle;
+    }
+
+    public String getAppDescription() {
+        return appDescription;
+    }
+
+    public void setAppDescription(String appDescription) {
+        this.appDescription = appDescription;
     }
 
     public OffsetDateTime getUpdatedAt() {
