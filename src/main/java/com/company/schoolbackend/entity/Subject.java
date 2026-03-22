@@ -20,6 +20,9 @@ public class Subject {
     @Column(name = "color")
     private String color;
 
+    @Column(name = "class_id")
+    private Long classId;
+
     public Long getId() {
         return id;
     }
@@ -42,5 +45,13 @@ public class Subject {
 
     public void setColor(String color) {
         this.color = color;
+    }
+
+    public Long getClassId() {
+        return classId;
+    }
+
+    public void setClassId(Long classId) {
+        this.classId = classId;
     }
 }

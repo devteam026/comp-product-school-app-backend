@@ -6,4 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TimetablePeriodRepository extends JpaRepository<TimetablePeriod, Long> {
     List<TimetablePeriod> findByDayOfWeekOrderByPeriodNoAsc(String dayOfWeek);
+    List<TimetablePeriod> findByClassId(Long classId);
+    List<TimetablePeriod> findByClassIdIsNull();
+    List<TimetablePeriod> findByClassIdOrClassIdIsNull(Long classId);
 }

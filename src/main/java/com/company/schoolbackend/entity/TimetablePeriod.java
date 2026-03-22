@@ -27,6 +27,9 @@ public class TimetablePeriod {
     @Column(name = "end_time", nullable = false)
     private LocalTime endTime;
 
+    @Column(name = "class_id")
+    private Long classId;
+
     public Long getId() {
         return id;
     }
@@ -65,5 +68,13 @@ public class TimetablePeriod {
 
     public void setEndTime(LocalTime endTime) {
         this.endTime = endTime;
+    }
+
+    public Long getClassId() {
+        return classId;
+    }
+
+    public void setClassId(Long classId) {
+        this.classId = classId;
     }
 }

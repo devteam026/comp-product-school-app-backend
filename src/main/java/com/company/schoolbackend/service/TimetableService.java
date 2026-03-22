@@ -8,7 +8,9 @@ import com.company.schoolbackend.dto.TimetableAssignmentDto;
 import com.company.schoolbackend.dto.TimetableBulkRequest;
 import com.company.schoolbackend.dto.TimetableCopyRequest;
 import com.company.schoolbackend.dto.TimetableCreateRequest;
+import com.company.schoolbackend.dto.TimetablePeriodRequest;
 import com.company.schoolbackend.dto.TimetableResponse;
+import com.company.schoolbackend.dto.TimetableSubjectRequest;
 import com.company.schoolbackend.entity.SchoolClass;
 import com.company.schoolbackend.entity.Employee;
 import com.company.schoolbackend.entity.Subject;
@@ -22,6 +24,7 @@ import com.company.schoolbackend.repository.TeacherSubjectRepository;
 import com.company.schoolbackend.repository.TeacherUnavailabilityRepository;
 import com.company.schoolbackend.repository.TimetableAssignmentRepository;
 import com.company.schoolbackend.repository.TimetablePeriodRepository;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -74,7 +77,22 @@ public class TimetableService {
         List<Employee> teachers = employeeRepository.findAll().stream()
                 .filter(e -> e.getDepartment() != null && e.getDepartment().equalsIgnoreCase("Teaching"))
                 .collect(Collectors.toList());
-        List<Subject> subjects = subjectRepository.findAll();
+        List<Subject> subjects;
+        if (classId != null) {
+            subjects = subjectRepository.findByClassIdOrClassIdIsNull(classId);
+            if (subjects.isEmpty()) {
+                subjects = subjectRepository.findAll();
+            }
+        } else {
+            subjects = subjectRepository.findAll();
+        }
+        List<TimetablePeriod> periodsForClass;
+        if (classId != null) {
+            periodsForClass = periodRepository.findByClassIdOrClassIdIsNull(classId);
+            if (!periodsForClass.isEmpty()) {
+                periods = periodsForClass;
+            }
+        }
         List<SchoolClass> classes = classRepository.findByActiveTrueOrderByClassCodeAsc();
 
         Map<Long, List<Long>> teacherSubjects = teacherSubjectRepository.findAll().stream()
@@ -102,6 +120,93 @@ public class TimetableService {
                 .map(c -> new ClassDto(c.getId(), c.getName(), c.getSection(), c.getClassCode()))
                 .collect(Collectors.toList()));
         return response;
+    }
+
+    public List<SubjectDto> listSubjects(Long classId) {
+        List<Subject> subjects = classId == null
+                ? subjectRepository.findAll()
+                : subjectRepository.findByClassId(classId);
+        return subjects.stream()
+                .map(s -> new SubjectDto(s.getId(), s.getName(), s.getColor()))
+                .collect(Collectors.toList());
+    }
+
+    public SubjectDto createSubject(TimetableSubjectRequest request) {
+        if (request == null || request.getClassId() == null
+                || request.getName() == null || request.getName().isBlank()) {
+            throw new IllegalArgumentException("Missing fields");
+        }
+        Subject subject = new Subject();
+        subject.setClassId(request.getClassId());
+        subject.setName(request.getName().trim());
+        subject.setColor(request.getColor());
+        Subject saved = subjectRepository.save(subject);
+        return new SubjectDto(saved.getId(), saved.getName(), saved.getColor());
+    }
+
+    public SubjectDto updateSubject(Long id, TimetableSubjectRequest request) {
+        if (request == null || request.getClassId() == null
+                || request.getName() == null || request.getName().isBlank()) {
+            throw new IllegalArgumentException("Missing fields");
+        }
+        Subject subject = subjectRepository.findById(id).orElseThrow();
+        subject.setClassId(request.getClassId());
+        subject.setName(request.getName().trim());
+        subject.setColor(request.getColor());
+        Subject saved = subjectRepository.save(subject);
+        return new SubjectDto(saved.getId(), saved.getName(), saved.getColor());
+    }
+
+    public void deleteSubject(Long id) {
+        subjectRepository.deleteById(id);
+    }
+
+    public List<PeriodDto> listPeriods(Long classId) {
+        List<TimetablePeriod> periods = classId == null
+                ? periodRepository.findAll()
+                : periodRepository.findByClassId(classId);
+        return periods.stream()
+                .map(p -> new PeriodDto(p.getId(), p.getDayOfWeek(), p.getPeriodNo(),
+                        p.getStartTime().toString(), p.getEndTime().toString()))
+                .collect(Collectors.toList());
+    }
+
+    public PeriodDto createPeriod(TimetablePeriodRequest request) {
+        if (request == null || request.getClassId() == null
+                || request.getDayOfWeek() == null || request.getPeriodNo() == null
+                || request.getStartTime() == null || request.getEndTime() == null) {
+            throw new IllegalArgumentException("Missing fields");
+        }
+        TimetablePeriod period = new TimetablePeriod();
+        period.setClassId(request.getClassId());
+        period.setDayOfWeek(request.getDayOfWeek().trim().toUpperCase());
+        period.setPeriodNo(request.getPeriodNo());
+        period.setStartTime(LocalTime.parse(request.getStartTime()));
+        period.setEndTime(LocalTime.parse(request.getEndTime()));
+        TimetablePeriod saved = periodRepository.save(period);
+        return new PeriodDto(saved.getId(), saved.getDayOfWeek(), saved.getPeriodNo(),
+                saved.getStartTime().toString(), saved.getEndTime().toString());
+    }
+
+    public PeriodDto updatePeriod(Long id, TimetablePeriodRequest request) {
+        if (request == null || request.getClassId() == null
+                || request.getDayOfWeek() == null || request.getPeriodNo() == null
+                || request.getStartTime() == null || request.getEndTime() == null) {
+            throw new IllegalArgumentException("Missing fields");
+        }
+        TimetablePeriod period = periodRepository.findById(id).orElseThrow();
+        period.setClassId(request.getClassId());
+        period.setDayOfWeek(request.getDayOfWeek().trim().toUpperCase());
+        period.setPeriodNo(request.getPeriodNo());
+        period.setStartTime(LocalTime.parse(request.getStartTime()));
+        period.setEndTime(LocalTime.parse(request.getEndTime()));
+        TimetablePeriod saved = periodRepository.save(period);
+        return new PeriodDto(saved.getId(), saved.getDayOfWeek(), saved.getPeriodNo(),
+                saved.getStartTime().toString(), saved.getEndTime().toString());
+    }
+
+    public void deletePeriod(Long id) {
+        periodRepository.deleteById(id);
     }
 
     public TimetableAssignmentDto create(TimetableCreateRequest request) {

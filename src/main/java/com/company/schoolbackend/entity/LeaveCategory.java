@@ -23,6 +23,12 @@ public class LeaveCategory {
     @Column(name = "max_days", nullable = false)
     private Integer maxDays;
 
+    @Column(name = "period_type")
+    private String periodType;
+
+    @Column(name = "max_per_period")
+    private Integer maxPerPeriod;
+
     @Column(nullable = false)
     private boolean active = true;
 
@@ -34,6 +40,10 @@ public class LeaveCategory {
     public void setRole(String role) { this.role = role; }
     public Integer getMaxDays() { return maxDays; }
     public void setMaxDays(Integer maxDays) { this.maxDays = maxDays; }
+    public String getPeriodType() { return periodType; }
+    public void setPeriodType(String periodType) { this.periodType = periodType; }
+    public Integer getMaxPerPeriod() { return maxPerPeriod; }
+    public void setMaxPerPeriod(Integer maxPerPeriod) { this.maxPerPeriod = maxPerPeriod; }
     public boolean isActive() { return active; }
     public void setActive(boolean active) { this.active = active; }
 }

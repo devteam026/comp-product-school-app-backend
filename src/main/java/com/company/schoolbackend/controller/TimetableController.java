@@ -5,7 +5,11 @@ import com.company.schoolbackend.dto.TimetableBulkRequest;
 import com.company.schoolbackend.dto.TimetableCopyRequest;
 import com.company.schoolbackend.dto.TimetableCreateRequest;
 import com.company.schoolbackend.dto.TimetableLockRequest;
+import com.company.schoolbackend.dto.TimetablePeriodRequest;
 import com.company.schoolbackend.dto.TimetableResponse;
+import com.company.schoolbackend.dto.TimetableSubjectRequest;
+import com.company.schoolbackend.dto.PeriodDto;
+import com.company.schoolbackend.dto.SubjectDto;
 import com.company.schoolbackend.dto.UserProfile;
 import com.company.schoolbackend.service.TimetableService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -95,6 +99,92 @@ public class TimetableController {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
         timetableService.setLock(requestBody.getAssignmentId(), requestBody.isLocked());
+        return ResponseEntity.ok(java.util.Map.of("ok", true));
+    }
+
+    @GetMapping("/subjects")
+    public ResponseEntity<java.util.List<SubjectDto>> listSubjects(
+            @RequestParam(value = "classId", required = false) Long classId,
+            HttpServletRequest request
+    ) {
+        if (!isAdmin(request)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        return ResponseEntity.ok(timetableService.listSubjects(classId));
+    }
+
+    @PostMapping("/subjects")
+    public ResponseEntity<SubjectDto> createSubject(
+            @RequestBody TimetableSubjectRequest requestBody,
+            HttpServletRequest request
+    ) {
+        if (!isAdmin(request)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        return ResponseEntity.ok(timetableService.createSubject(requestBody));
+    }
+
+    @PutMapping("/subjects/{id}")
+    public ResponseEntity<SubjectDto> updateSubject(
+            @PathVariable Long id,
+            @RequestBody TimetableSubjectRequest requestBody,
+            HttpServletRequest request
+    ) {
+        if (!isAdmin(request)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        return ResponseEntity.ok(timetableService.updateSubject(id, requestBody));
+    }
+
+    @DeleteMapping("/subjects/{id}")
+    public ResponseEntity<?> deleteSubject(@PathVariable Long id, HttpServletRequest request) {
+        if (!isAdmin(request)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        timetableService.deleteSubject(id);
+        return ResponseEntity.ok(java.util.Map.of("ok", true));
+    }
+
+    @GetMapping("/periods")
+    public ResponseEntity<java.util.List<PeriodDto>> listPeriods(
+            @RequestParam(value = "classId", required = false) Long classId,
+            HttpServletRequest request
+    ) {
+        if (!isAdmin(request)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        return ResponseEntity.ok(timetableService.listPeriods(classId));
+    }
+
+    @PostMapping("/periods")
+    public ResponseEntity<PeriodDto> createPeriod(
+            @RequestBody TimetablePeriodRequest requestBody,
+            HttpServletRequest request
+    ) {
+        if (!isAdmin(request)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        return ResponseEntity.ok(timetableService.createPeriod(requestBody));
+    }
+
+    @PutMapping("/periods/{id}")
+    public ResponseEntity<PeriodDto> updatePeriod(
+            @PathVariable Long id,
+            @RequestBody TimetablePeriodRequest requestBody,
+            HttpServletRequest request
+    ) {
+        if (!isAdmin(request)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        return ResponseEntity.ok(timetableService.updatePeriod(id, requestBody));
+    }
+
+    @DeleteMapping("/periods/{id}")
+    public ResponseEntity<?> deletePeriod(@PathVariable Long id, HttpServletRequest request) {
+        if (!isAdmin(request)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        timetableService.deletePeriod(id);
         return ResponseEntity.ok(java.util.Map.of("ok", true));
     }
 
