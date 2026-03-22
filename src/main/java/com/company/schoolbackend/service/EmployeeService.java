@@ -13,6 +13,8 @@ import com.company.schoolbackend.repository.TeacherClassRepository;
 import com.company.schoolbackend.entity.AppUser;
 import com.company.schoolbackend.entity.TeacherClass;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -163,9 +165,12 @@ public class EmployeeService {
             throw new IllegalArgumentException("Employee required");
         }
         AppUser user = appUserRepository.findByUsername(String.valueOf(employeeId))
-                .orElseThrow(() -> new IllegalArgumentException("Login user not found"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Assign login role first for this employee."
+                ));
         if (user.getRole() != UserRole.teacher) {
-            throw new IllegalArgumentException("Employee is not a teacher");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Employee is not a teacher");
         }
         teacherClassRepository.deleteByTeacherUserId(user.getId());
         if (classCodes == null) {
