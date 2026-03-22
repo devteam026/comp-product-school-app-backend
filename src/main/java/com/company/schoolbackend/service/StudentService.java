@@ -125,10 +125,17 @@ public class StudentService {
         response.setFeeType(student.getFeeType().name());
         response.setProfilePhotoKey(student.getProfilePhotoKey());
         List<String> entries = new ArrayList<>();
+        List<com.company.schoolbackend.dto.StudentHistoryEntry> historyEntries = new ArrayList<>();
         for (StudentHistory item : history) {
             entries.add(item.getEntry());
+            com.company.schoolbackend.dto.StudentHistoryEntry historyEntry =
+                    new com.company.schoolbackend.dto.StudentHistoryEntry();
+            historyEntry.setEntry(item.getEntry());
+            historyEntry.setCreatedAt(item.getCreatedAt() == null ? null : item.getCreatedAt().toString());
+            historyEntries.add(historyEntry);
         }
         response.setHistory(entries);
+        response.setHistoryEntries(historyEntries);
         return response;
     }
 

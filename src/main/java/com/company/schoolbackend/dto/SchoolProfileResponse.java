@@ -8,6 +8,10 @@ public class SchoolProfileResponse {
     private String logoUrl;
     private String campusImageUrl;
     private String schoolUrl;
+    private String sidebarBg;
+    private String brandName;
+    private String appTitle;
+    private String appDescription;
 
     public String getSchoolName() {
         return schoolName;
@@ -64,4 +68,36 @@ public class SchoolProfileResponse {
     public void setSchoolUrl(String schoolUrl) {
         this.schoolUrl = schoolUrl;
     }
+    public String getSidebarBg() {
+        return sidebarBg;
+    }
+
+    public void setSidebarBg(String sidebarBg) {
+        this.sidebarBg = sidebarBg;
+    }
+
+    public String getBrandName() {
+        return brandName;
+    }
+
+    public void setBrandName(String brandName) {
+        this.brandName = brandName;
+    }
+
+    public String getAppTitle() {
+        return appTitle;
+    }
+
+    public void setAppTitle(String appTitle) {
+        this.appTitle = appTitle;
+    }
+
+    public String getAppDescription() {
+        return appDescription;
+    }
+
+    public void setAppDescription(String appDescription) {
+        this.appDescription = appDescription;
+    }
+
 }

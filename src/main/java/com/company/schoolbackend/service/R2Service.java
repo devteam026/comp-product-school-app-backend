@@ -52,6 +52,21 @@ public class R2Service {
         return presigner.presignPutObject(presignRequest);
     }
 
+    public String generateObjectKey(String fileName, String customPrefix) {
+        String prefixValue = customPrefix == null || customPrefix.isBlank() ? prefix : customPrefix;
+        if (!prefixValue.endsWith("/")) {
+            prefixValue = prefixValue + "/";
+        }
+        String extension = ".jpg";
+        if (fileName != null && fileName.contains(".")) {
+            String ext = fileName.substring(fileName.lastIndexOf("."));
+            if (ext.length() <= 5) {
+                extension = ext.toLowerCase();
+            }
+        }
+        return prefixValue + UUID.randomUUID() + extension;
+    }
+
     public String generateObjectKey(String fileName) {
         String extension = ".jpg";
         if (fileName != null && fileName.contains(".")) {

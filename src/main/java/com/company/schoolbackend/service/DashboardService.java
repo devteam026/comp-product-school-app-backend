@@ -10,6 +10,7 @@ import com.company.schoolbackend.entity.AttendanceStatus;
 import com.company.schoolbackend.entity.FeeType;
 import com.company.schoolbackend.entity.Gender;
 import com.company.schoolbackend.entity.Student;
+import com.company.schoolbackend.entity.StudentStatus;
 import com.company.schoolbackend.repository.AttendanceRecordRepository;
 import com.company.schoolbackend.repository.PaymentRepository;
 import com.company.schoolbackend.repository.StudentRepository;
@@ -39,7 +40,10 @@ public class DashboardService {
     }
 
     public DashboardResponse getDashboard(String classCode) {
-        List<Student> students = studentRepository.findAll();
+        List<Student> students = studentRepository.findAll()
+                .stream()
+                .filter(student -> student.getStatus() == StudentStatus.Active)
+                .collect(java.util.stream.Collectors.toList());
         if (classCode != null && !classCode.isBlank() && !"all".equalsIgnoreCase(classCode)) {
             students = students.stream().filter(s -> classCode.equals(s.getClassCode())).collect(Collectors.toList());
         }

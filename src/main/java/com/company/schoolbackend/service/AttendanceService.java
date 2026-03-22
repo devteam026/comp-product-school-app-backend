@@ -6,7 +6,9 @@ import com.company.schoolbackend.dto.AttendanceSaveRequest;
 import com.company.schoolbackend.dto.AttendanceSaveResponse;
 import com.company.schoolbackend.entity.AttendanceRecord;
 import com.company.schoolbackend.entity.AttendanceStatus;
+import com.company.schoolbackend.entity.StudentStatus;
 import com.company.schoolbackend.repository.AttendanceRecordRepository;
+import com.company.schoolbackend.repository.StudentRepository;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -18,9 +20,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class AttendanceService {
     private final AttendanceRecordRepository attendanceRecordRepository;
+    private final StudentRepository studentRepository;
 
-    public AttendanceService(AttendanceRecordRepository attendanceRecordRepository) {
+    public AttendanceService(AttendanceRecordRepository attendanceRecordRepository, StudentRepository studentRepository) {
         this.attendanceRecordRepository = attendanceRecordRepository;
+        this.studentRepository = studentRepository;
     }
 
     public AttendanceSaveResponse save(AttendanceSaveRequest request) {
@@ -40,6 +44,13 @@ public class AttendanceService {
             }
         }
 
+        List<String> activeStudentIds = studentRepository.findAll()
+                .stream()
+                .filter(student -> student.getStatus() == StudentStatus.Active)
+                .map(student -> student.getId())
+                .toList();
+        studentIds.retainAll(activeStudentIds);
+
         List<AttendanceRecord> existing = attendanceRecordRepository.findByAttendanceDateAndStudentIdIn(date, studentIds);
         Map<String, AttendanceRecord> existingMap = new HashMap<>();
         for (AttendanceRecord record : existing) {
@@ -49,6 +60,9 @@ public class AttendanceService {
         int saved = 0;
         for (AttendanceRecordDto dto : records) {
             if (dto.getStudentId() == null || dto.getStatus() == null) {
+                continue;
+            }
+            if (!studentIds.contains(dto.getStudentId())) {
                 continue;
             }
             AttendanceRecord record = existingMap.getOrDefault(dto.getStudentId(), new AttendanceRecord());

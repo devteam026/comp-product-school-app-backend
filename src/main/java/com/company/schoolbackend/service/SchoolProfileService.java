@@ -27,6 +27,10 @@ public class SchoolProfileService {
             created.setLogoUrl("");
             created.setCampusImageUrl("");
             created.setSchoolUrl("");
+            created.setSidebarBg("#0f172a");
+            created.setBrandName("School Portal");
+            created.setAppTitle("School Portal");
+            created.setAppDescription("School management dashboard");
             created.setUpdatedAt(OffsetDateTime.now());
             return repository.save(created);
         });
@@ -48,6 +52,10 @@ public class SchoolProfileService {
         profile.setLogoUrl(nullToEmpty(request.getLogoUrl()));
         profile.setCampusImageUrl(nullToEmpty(request.getCampusImageUrl()));
         profile.setSchoolUrl(nullToEmpty(request.getSchoolUrl()));
+        profile.setSidebarBg(nullToEmpty(request.getSidebarBg()));
+        profile.setBrandName(nullToEmpty(request.getBrandName()));
+        profile.setAppTitle(nullToEmpty(request.getAppTitle()));
+        profile.setAppDescription(nullToEmpty(request.getAppDescription()));
         profile.setUpdatedAt(OffsetDateTime.now());
         return toResponse(repository.save(profile));
     }
@@ -61,6 +69,10 @@ public class SchoolProfileService {
         response.setLogoUrl(profile.getLogoUrl());
         response.setCampusImageUrl(profile.getCampusImageUrl());
         response.setSchoolUrl(profile.getSchoolUrl());
+        response.setSidebarBg(profile.getSidebarBg());
+        response.setBrandName(profile.getBrandName());
+        response.setAppTitle(profile.getAppTitle());
+        response.setAppDescription(profile.getAppDescription());
         return response;
     }
 
