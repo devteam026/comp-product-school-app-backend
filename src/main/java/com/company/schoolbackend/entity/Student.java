@@ -37,10 +37,22 @@ public class Student {
     @Column(name = "admission_number")
     private String admissionNumber;
 
+    @Column(name = "register_no")
+    private String registerNo;
+
     @Column(name = "roll_number")
     private String rollNumber;
 
     private String address;
+
+    @Column(name = "academic_session")
+    private String session;
+
+    @Column(name = "father_name")
+    private String fatherName;
+
+    @Column(name = "mother_name")
+    private String motherName;
 
     @Column(name = "parent_name")
     private String parentName;
@@ -51,11 +63,38 @@ public class Student {
     @Column(name = "parent_phone")
     private String parentPhone;
 
+    @Column(name = "parent_whatsapp")
+    private String parentWhatsapp;
+
     @Column(name = "parent_email")
     private String parentEmail;
 
     @Column(name = "parent_occupation")
     private String parentOccupation;
+
+    @Column(name = "transport_required")
+    private boolean transportRequired;
+
+    @Column(name = "transport_route")
+    private String transportRoute;
+
+    @Column(name = "transport_vehicle_no")
+    private String transportVehicleNo;
+
+    @Column(name = "hostel_required")
+    private boolean hostelRequired;
+
+    @Column(name = "hostel_name")
+    private String hostelName;
+
+    @Column(name = "hostel_room_no")
+    private String hostelRoomNo;
+
+    @Column(name = "previous_school_name")
+    private String previousSchoolName;
+
+    @Column(name = "previous_qualification")
+    private String previousQualification;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -138,6 +177,14 @@ public class Student {
         this.admissionNumber = admissionNumber;
     }
 
+    public String getRegisterNo() {
+        return registerNo;
+    }
+
+    public void setRegisterNo(String registerNo) {
+        this.registerNo = registerNo;
+    }
+
     public String getRollNumber() {
         return rollNumber;
     }
@@ -152,6 +199,30 @@ public class Student {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public String getSession() {
+        return session;
+    }
+
+    public void setSession(String session) {
+        this.session = session;
+    }
+
+    public String getFatherName() {
+        return fatherName;
+    }
+
+    public void setFatherName(String fatherName) {
+        this.fatherName = fatherName;
+    }
+
+    public String getMotherName() {
+        return motherName;
+    }
+
+    public void setMotherName(String motherName) {
+        this.motherName = motherName;
     }
 
     public String getParentName() {
@@ -178,6 +249,14 @@ public class Student {
         this.parentPhone = parentPhone;
     }
 
+    public String getParentWhatsapp() {
+        return parentWhatsapp;
+    }
+
+    public void setParentWhatsapp(String parentWhatsapp) {
+        this.parentWhatsapp = parentWhatsapp;
+    }
+
     public String getParentEmail() {
         return parentEmail;
     }
@@ -192,6 +271,70 @@ public class Student {
 
     public void setParentOccupation(String parentOccupation) {
         this.parentOccupation = parentOccupation;
+    }
+
+    public boolean isTransportRequired() {
+        return transportRequired;
+    }
+
+    public void setTransportRequired(boolean transportRequired) {
+        this.transportRequired = transportRequired;
+    }
+
+    public String getTransportRoute() {
+        return transportRoute;
+    }
+
+    public void setTransportRoute(String transportRoute) {
+        this.transportRoute = transportRoute;
+    }
+
+    public String getTransportVehicleNo() {
+        return transportVehicleNo;
+    }
+
+    public void setTransportVehicleNo(String transportVehicleNo) {
+        this.transportVehicleNo = transportVehicleNo;
+    }
+
+    public boolean isHostelRequired() {
+        return hostelRequired;
+    }
+
+    public void setHostelRequired(boolean hostelRequired) {
+        this.hostelRequired = hostelRequired;
+    }
+
+    public String getHostelName() {
+        return hostelName;
+    }
+
+    public void setHostelName(String hostelName) {
+        this.hostelName = hostelName;
+    }
+
+    public String getHostelRoomNo() {
+        return hostelRoomNo;
+    }
+
+    public void setHostelRoomNo(String hostelRoomNo) {
+        this.hostelRoomNo = hostelRoomNo;
+    }
+
+    public String getPreviousSchoolName() {
+        return previousSchoolName;
+    }
+
+    public void setPreviousSchoolName(String previousSchoolName) {
+        this.previousSchoolName = previousSchoolName;
+    }
+
+    public String getPreviousQualification() {
+        return previousQualification;
+    }
+
+    public void setPreviousQualification(String previousQualification) {
+        this.previousQualification = previousQualification;
     }
 
     public StudentStatus getStatus() {
