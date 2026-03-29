@@ -73,7 +73,7 @@ public class Student {
     private String parentOccupation;
 
     @Column(name = "transport_required")
-    private boolean transportRequired;
+    private Boolean transportRequired;
 
     @Column(name = "transport_route")
     private String transportRoute;
@@ -82,7 +82,7 @@ public class Student {
     private String transportVehicleNo;
 
     @Column(name = "hostel_required")
-    private boolean hostelRequired;
+    private Boolean hostelRequired;
 
     @Column(name = "hostel_name")
     private String hostelName;
@@ -273,11 +273,11 @@ public class Student {
         this.parentOccupation = parentOccupation;
     }
 
-    public boolean isTransportRequired() {
+    public Boolean getTransportRequired() {
         return transportRequired;
     }
 
-    public void setTransportRequired(boolean transportRequired) {
+    public void setTransportRequired(Boolean transportRequired) {
         this.transportRequired = transportRequired;
     }
 
@@ -297,11 +297,11 @@ public class Student {
         this.transportVehicleNo = transportVehicleNo;
     }
 
-    public boolean isHostelRequired() {
+    public Boolean getHostelRequired() {
         return hostelRequired;
     }
 
-    public void setHostelRequired(boolean hostelRequired) {
+    public void setHostelRequired(Boolean hostelRequired) {
         this.hostelRequired = hostelRequired;
     }
 

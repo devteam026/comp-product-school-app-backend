@@ -120,7 +120,7 @@ public class StudentService {
                 throw new IllegalArgumentException("Vehicle number is required");
             }
         }
-        if (request.getHostelRequired() != null && request.getHostelRequired()) {
+        if (Boolean.TRUE.equals(request.getHostelRequired())) {
             if (isBlank(request.getHostelName())) {
                 throw new IllegalArgumentException("Hostel name is required");
             }
@@ -178,9 +178,19 @@ public class StudentService {
         student.setTransportRequired(Boolean.TRUE.equals(request.getTransportRequired()));
         student.setTransportRoute(trim(request.getTransportRoute()));
         student.setTransportVehicleNo(trim(request.getTransportVehicleNo()));
-        student.setHostelRequired(Boolean.TRUE.equals(request.getHostelRequired()));
-        student.setHostelName(trim(request.getHostelName()));
-        student.setHostelRoomNo(trim(request.getHostelRoomNo()));
+        boolean hasHostelPayload =
+                request.getHostelRequired() != null
+                        || request.getHostelName() != null
+                        || request.getHostelRoomNo() != null;
+        if (hasHostelPayload) {
+            student.setHostelRequired(Boolean.TRUE.equals(request.getHostelRequired()));
+            student.setHostelName(trim(request.getHostelName()));
+            student.setHostelRoomNo(trim(request.getHostelRoomNo()));
+        } else if (isNew) {
+            student.setHostelRequired(false);
+            student.setHostelName(null);
+            student.setHostelRoomNo(null);
+        }
         student.setPreviousSchoolName(trim(request.getPreviousSchoolName()));
         student.setPreviousQualification(trim(request.getPreviousQualification()));
         StudentStatus statusValue = parseEnum(StudentStatus.class, request.getStatus());
@@ -248,10 +258,10 @@ public class StudentService {
         response.setParentWhatsapp(student.getParentWhatsapp());
         response.setParentEmail(student.getParentEmail());
         response.setParentOccupation(student.getParentOccupation());
-        response.setTransportRequired(student.isTransportRequired());
+        response.setTransportRequired(Boolean.TRUE.equals(student.getTransportRequired()));
         response.setTransportRoute(student.getTransportRoute());
         response.setTransportVehicleNo(student.getTransportVehicleNo());
-        response.setHostelRequired(student.isHostelRequired());
+        response.setHostelRequired(Boolean.TRUE.equals(student.getHostelRequired()));
         response.setHostelName(student.getHostelName());
         response.setHostelRoomNo(student.getHostelRoomNo());
         response.setPreviousSchoolName(student.getPreviousSchoolName());

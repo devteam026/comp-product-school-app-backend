@@ -18,7 +18,22 @@ public class Hostel {
     private String name;
 
     @Column(nullable = false)
-    private boolean active = true;
+    private String type;
+
+    @Column
+    private Integer capacity;
+
+    @Column(name = "warden_id")
+    private Long wardenId;
+
+    @Column(name = "contact_number")
+    private String contactNumber;
+
+    @Column(columnDefinition = "TEXT")
+    private String address;
+
+    @Column(name = "school_id")
+    private Long schoolId;
 
     public Long getId() {
         return id;
@@ -36,11 +51,51 @@ public class Hostel {
         this.name = name;
     }
 
-    public boolean isActive() {
-        return active;
+    public String getType() {
+        return type;
     }
 
-    public void setActive(boolean active) {
-        this.active = active;
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public Integer getCapacity() {
+        return capacity;
+    }
+
+    public void setCapacity(Integer capacity) {
+        this.capacity = capacity;
+    }
+
+    public Long getWardenId() {
+        return wardenId;
+    }
+
+    public void setWardenId(Long wardenId) {
+        this.wardenId = wardenId;
+    }
+
+    public String getContactNumber() {
+        return contactNumber;
+    }
+
+    public void setContactNumber(String contactNumber) {
+        this.contactNumber = contactNumber;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public Long getSchoolId() {
+        return schoolId;
+    }
+
+    public void setSchoolId(Long schoolId) {
+        this.schoolId = schoolId;
     }
 }

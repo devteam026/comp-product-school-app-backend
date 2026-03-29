@@ -14,14 +14,26 @@ public class HostelRoom {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "hostel_name", nullable = false)
-    private String hostelName;
+    @Column(name = "hostel_id", nullable = false)
+    private Long hostelId;
 
-    @Column(name = "room_no", nullable = false)
-    private String roomNo;
+    @Column(name = "room_number", nullable = false)
+    private String roomNumber;
 
-    @Column(nullable = false)
-    private boolean active = true;
+    @Column
+    private Integer floor;
+
+    @Column(name = "room_type")
+    private String roomType;
+
+    @Column
+    private Integer capacity;
+
+    @Column(name = "current_occupancy")
+    private Integer currentOccupancy = 0;
+
+    @Column
+    private String status;
 
     public Long getId() {
         return id;
@@ -31,27 +43,59 @@ public class HostelRoom {
         this.id = id;
     }
 
-    public String getHostelName() {
-        return hostelName;
+    public Long getHostelId() {
+        return hostelId;
     }
 
-    public void setHostelName(String hostelName) {
-        this.hostelName = hostelName;
+    public void setHostelId(Long hostelId) {
+        this.hostelId = hostelId;
     }
 
-    public String getRoomNo() {
-        return roomNo;
+    public String getRoomNumber() {
+        return roomNumber;
     }
 
-    public void setRoomNo(String roomNo) {
-        this.roomNo = roomNo;
+    public void setRoomNumber(String roomNumber) {
+        this.roomNumber = roomNumber;
     }
 
-    public boolean isActive() {
-        return active;
+    public Integer getFloor() {
+        return floor;
     }
 
-    public void setActive(boolean active) {
-        this.active = active;
+    public void setFloor(Integer floor) {
+        this.floor = floor;
+    }
+
+    public String getRoomType() {
+        return roomType;
+    }
+
+    public void setRoomType(String roomType) {
+        this.roomType = roomType;
+    }
+
+    public Integer getCapacity() {
+        return capacity;
+    }
+
+    public void setCapacity(Integer capacity) {
+        this.capacity = capacity;
+    }
+
+    public Integer getCurrentOccupancy() {
+        return currentOccupancy;
+    }
+
+    public void setCurrentOccupancy(Integer currentOccupancy) {
+        this.currentOccupancy = currentOccupancy;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

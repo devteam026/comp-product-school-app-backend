@@ -9,6 +9,7 @@ import com.company.schoolbackend.repository.HostelRoomRepository;
 import com.company.schoolbackend.repository.TransportRouteRepository;
 import com.company.schoolbackend.repository.TransportVehicleRepository;
 import java.util.List;
+import java.util.Collections;
 import java.util.stream.Collectors;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -44,9 +45,7 @@ public class StudentOptionsController {
 
     @GetMapping("/transport/vehicles")
     public List<String> transportVehicles(@RequestParam(value = "route", required = false) String route) {
-        List<TransportVehicle> vehicles = route == null || route.isBlank()
-                ? transportVehicleRepository.findByActiveTrueOrderByVehicleNoAsc()
-                : transportVehicleRepository.findByActiveTrueAndRouteNameOrderByVehicleNoAsc(route.trim());
+        List<TransportVehicle> vehicles = transportVehicleRepository.findByActiveTrueOrderByVehicleNoAsc();
         return vehicles.stream()
                 .map(TransportVehicle::getVehicleNo)
                 .collect(Collectors.toList());
@@ -54,18 +53,51 @@ public class StudentOptionsController {
 
     @GetMapping("/hostels")
     public List<String> hostels() {
-        return hostelRepository.findByActiveTrueOrderByNameAsc().stream()
+        List<String> names = hostelRepository.findAllByOrderByNameAsc().stream()
                 .map(Hostel::getName)
+                .collect(Collectors.toList());
+        if (!names.isEmpty()) {
+            return names;
+        }
+        return hostelRoomRepository.findAllByOrderByRoomNumberAsc().stream()
+                .map(HostelRoom::getHostelId)
+                .distinct()
+                .map(id -> hostelRepository.findById(id).map(Hostel::getName).orElse(""))
+                .filter(name -> name != null && !name.isBlank())
                 .collect(Collectors.toList());
     }
 
     @GetMapping("/hostels/rooms")
-    public List<String> hostelRooms(@RequestParam(value = "hostel", required = false) String hostel) {
-        List<HostelRoom> rooms = hostel == null || hostel.isBlank()
-                ? hostelRoomRepository.findByActiveTrueOrderByRoomNoAsc()
-                : hostelRoomRepository.findByActiveTrueAndHostelNameOrderByRoomNoAsc(hostel.trim());
+    public List<String> hostelRooms(
+            @RequestParam(value = "hostel", required = false) String hostel,
+            @RequestParam(value = "onlyAvailable", required = false, defaultValue = "false") boolean onlyAvailable
+    ) {
+        List<HostelRoom> rooms;
+        if (hostel == null || hostel.isBlank()) {
+            rooms = hostelRoomRepository.findAllByOrderByRoomNumberAsc();
+        } else {
+            Long hostelId = hostelRepository.findAllByOrderByNameAsc().stream()
+                    .filter(item -> hostel.trim().equalsIgnoreCase(item.getName()))
+                    .map(Hostel::getId)
+                    .findFirst()
+                    .orElse(null);
+            rooms = hostelId == null
+                    ? java.util.Collections.emptyList()
+                    : hostelRoomRepository.findByHostelIdOrderByRoomNumberAsc(hostelId);
+        }
         return rooms.stream()
-                .map(HostelRoom::getRoomNo)
+                .filter(room -> {
+                    if (!onlyAvailable) return true;
+                    String status = room.getStatus();
+                    if (status != null && status.equalsIgnoreCase("FULL")) return false;
+                    Integer capacity = room.getCapacity();
+                    Integer occupied = room.getCurrentOccupancy();
+                    if (capacity != null && capacity > 0 && occupied != null && occupied >= capacity) {
+                        return false;
+                    }
+                    return true;
+                })
+                .map(HostelRoom::getRoomNumber)
                 .collect(Collectors.toList());
     }
 }

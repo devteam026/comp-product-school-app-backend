@@ -6,5 +6,4 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TransportVehicleRepository extends JpaRepository<TransportVehicle, Long> {
     List<TransportVehicle> findByActiveTrueOrderByVehicleNoAsc();
-    List<TransportVehicle> findByActiveTrueAndRouteNameOrderByVehicleNoAsc(String routeName);
 }

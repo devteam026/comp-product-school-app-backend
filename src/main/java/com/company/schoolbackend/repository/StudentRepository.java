@@ -45,4 +45,16 @@ public interface StudentRepository extends JpaRepository<Student, String> {
             or lower(s.motherName) like :q)
     """)
     List<GuardianInfo> searchGuardians(@Param("q") String q);
+
+    List<Student> findByTransportRouteAndTransportVehicleNoAndTransportRequiredTrueAndStatus(
+            String transportRoute,
+            String transportVehicleNo,
+            StudentStatus status
+    );
+
+    long countByTransportRouteAndTransportVehicleNoAndTransportRequiredTrueAndStatus(
+            String transportRoute,
+            String transportVehicleNo,
+            StudentStatus status
+    );
 }
