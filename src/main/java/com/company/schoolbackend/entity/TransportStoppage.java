@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "transport_stoppages")
@@ -25,6 +26,12 @@ public class TransportStoppage {
 
     @Column(name = "check_out_time", nullable = false)
     private String checkOutTime;
+
+    @Column(name = "fee_amount", precision = 10, scale = 2)
+    private BigDecimal feeAmount;
+
+    @Column(name = "distance_km", precision = 8, scale = 2)
+    private BigDecimal distanceKm;
 
     @Column(nullable = false)
     private boolean active = true;
@@ -67,6 +74,22 @@ public class TransportStoppage {
 
     public void setCheckOutTime(String checkOutTime) {
         this.checkOutTime = checkOutTime;
+    }
+
+    public BigDecimal getFeeAmount() {
+        return feeAmount;
+    }
+
+    public void setFeeAmount(BigDecimal feeAmount) {
+        this.feeAmount = feeAmount;
+    }
+
+    public BigDecimal getDistanceKm() {
+        return distanceKm;
+    }
+
+    public void setDistanceKm(BigDecimal distanceKm) {
+        this.distanceKm = distanceKm;
     }
 
     public boolean isActive() {

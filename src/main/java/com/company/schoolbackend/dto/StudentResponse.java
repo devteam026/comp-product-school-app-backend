@@ -27,6 +27,7 @@ public class StudentResponse {
     private Boolean transportRequired;
     private String transportRoute;
     private String transportVehicleNo;
+    private String transportStopName;
     private Boolean hostelRequired;
     private String hostelName;
     private String hostelRoomNo;
@@ -220,6 +221,14 @@ public class StudentResponse {
 
     public void setTransportVehicleNo(String transportVehicleNo) {
         this.transportVehicleNo = transportVehicleNo;
+    }
+
+    public String getTransportStopName() {
+        return transportStopName;
+    }
+
+    public void setTransportStopName(String transportStopName) {
+        this.transportStopName = transportStopName;
     }
 
     public Boolean getHostelRequired() {

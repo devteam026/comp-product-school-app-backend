@@ -3,10 +3,12 @@ package com.company.schoolbackend.controller;
 import com.company.schoolbackend.entity.Hostel;
 import com.company.schoolbackend.entity.HostelRoom;
 import com.company.schoolbackend.entity.TransportRoute;
+import com.company.schoolbackend.entity.TransportStoppage;
 import com.company.schoolbackend.entity.TransportVehicle;
 import com.company.schoolbackend.repository.HostelRepository;
 import com.company.schoolbackend.repository.HostelRoomRepository;
 import com.company.schoolbackend.repository.TransportRouteRepository;
+import com.company.schoolbackend.repository.TransportStoppageRepository;
 import com.company.schoolbackend.repository.TransportVehicleRepository;
 import java.util.List;
 import java.util.Collections;
@@ -21,17 +23,20 @@ import org.springframework.web.bind.annotation.RestController;
 public class StudentOptionsController {
     private final TransportRouteRepository transportRouteRepository;
     private final TransportVehicleRepository transportVehicleRepository;
+    private final TransportStoppageRepository transportStoppageRepository;
     private final HostelRepository hostelRepository;
     private final HostelRoomRepository hostelRoomRepository;
 
     public StudentOptionsController(
             TransportRouteRepository transportRouteRepository,
             TransportVehicleRepository transportVehicleRepository,
+            TransportStoppageRepository transportStoppageRepository,
             HostelRepository hostelRepository,
             HostelRoomRepository hostelRoomRepository
     ) {
         this.transportRouteRepository = transportRouteRepository;
         this.transportVehicleRepository = transportVehicleRepository;
+        this.transportStoppageRepository = transportStoppageRepository;
         this.hostelRepository = hostelRepository;
         this.hostelRoomRepository = hostelRoomRepository;
     }
@@ -48,6 +53,21 @@ public class StudentOptionsController {
         List<TransportVehicle> vehicles = transportVehicleRepository.findByActiveTrueOrderByVehicleNoAsc();
         return vehicles.stream()
                 .map(TransportVehicle::getVehicleNo)
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping("/transport/stoppages")
+    public List<String> transportStoppages(@RequestParam(value = "route", required = false) String route) {
+        List<TransportStoppage> stoppages;
+        if (route == null || route.isBlank()) {
+            stoppages = transportStoppageRepository.findByActiveTrueOrderByStopNameAsc();
+        } else {
+            stoppages = transportStoppageRepository.findByRouteNameAndActiveTrueOrderByStopNameAsc(route);
+        }
+        return stoppages.stream()
+                .map(TransportStoppage::getStopName)
+                .distinct()
+                .sorted(String.CASE_INSENSITIVE_ORDER)
                 .collect(Collectors.toList());
     }
 

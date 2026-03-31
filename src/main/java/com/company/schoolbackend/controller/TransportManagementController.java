@@ -239,6 +239,8 @@ public class TransportManagementController {
         stoppage.setStopName(request.getStopName());
         stoppage.setCheckInTime(request.getCheckInTime());
         stoppage.setCheckOutTime(request.getCheckOutTime());
+        stoppage.setFeeAmount(request.getFeeAmount());
+        stoppage.setDistanceKm(request.getDistanceKm());
         stoppage.setActive(request.isActive());
         return stoppageRepository.save(stoppage);
     }
@@ -250,6 +252,8 @@ public class TransportManagementController {
         stoppage.setStopName(request.getStopName());
         stoppage.setCheckInTime(request.getCheckInTime());
         stoppage.setCheckOutTime(request.getCheckOutTime());
+        stoppage.setFeeAmount(request.getFeeAmount());
+        stoppage.setDistanceKm(request.getDistanceKm());
         stoppage.setActive(request.isActive());
         return stoppageRepository.save(stoppage);
     }
@@ -268,19 +272,37 @@ public class TransportManagementController {
     @GetMapping("/assignments/{id}/students")
     public List<Map<String, Object>> assignmentStudents(@PathVariable Long id) {
         TransportAssignment assignment = assignmentRepository.findById(id).orElseThrow();
+        List<String> routeStops = stoppageRepository
+                .findByRouteNameAndActiveTrueOrderByStopNameAsc(assignment.getRouteName())
+                .stream()
+                .map(TransportStoppage::getStopName)
+                .filter(name -> name != null && !name.isBlank())
+                .map(String::trim)
+                .toList();
         List<Student> students = studentRepository
                 .findByTransportRouteAndTransportVehicleNoAndTransportRequiredTrueAndStatus(
                         assignment.getRouteName(),
                         assignment.getVehicleNo(),
                         StudentStatus.Active
                 );
+        if (!routeStops.isEmpty()) {
+            students = students.stream()
+                    .filter(student -> student.getTransportStopName() != null)
+                    .filter(student -> routeStops.contains(student.getTransportStopName().trim()))
+                    .toList();
+        } else {
+            students = students.stream()
+                    .filter(student -> student.getTransportStopName() != null && !student.getTransportStopName().isBlank())
+                    .toList();
+        }
         List<Map<String, Object>> list = new ArrayList<>();
         for (Student student : students) {
             list.add(Map.of(
                     "id", student.getId(),
                     "name", student.getName(),
                     "classCode", student.getClassCode(),
-                    "registerNo", student.getRegisterNo() == null ? "" : student.getRegisterNo()
+                    "registerNo", student.getRegisterNo() == null ? "" : student.getRegisterNo(),
+                    "stopName", student.getTransportStopName() == null ? "" : student.getTransportStopName()
             ));
         }
         return list;

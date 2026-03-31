@@ -31,6 +31,8 @@ public class StudentService {
     private final StudentHistoryRepository historyRepository;
     private final StudentAdmissionSequenceRepository admissionSequenceRepository;
     private final AppUserRepository appUserRepository;
+    private final com.company.schoolbackend.repository.TransportStoppageRepository transportStoppageRepository;
+    private final com.company.schoolbackend.repository.TransportAssignmentRepository transportAssignmentRepository;
     private final PasswordEncoder passwordEncoder;
 
     public StudentService(
@@ -38,12 +40,16 @@ public class StudentService {
             StudentHistoryRepository historyRepository,
             StudentAdmissionSequenceRepository admissionSequenceRepository,
             AppUserRepository appUserRepository,
+            com.company.schoolbackend.repository.TransportStoppageRepository transportStoppageRepository,
+            com.company.schoolbackend.repository.TransportAssignmentRepository transportAssignmentRepository,
             PasswordEncoder passwordEncoder
     ) {
         this.studentRepository = studentRepository;
         this.historyRepository = historyRepository;
         this.admissionSequenceRepository = admissionSequenceRepository;
         this.appUserRepository = appUserRepository;
+        this.transportStoppageRepository = transportStoppageRepository;
+        this.transportAssignmentRepository = transportAssignmentRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -113,11 +119,8 @@ public class StudentService {
             throw new IllegalArgumentException("Parent occupation is required");
         }
         if (request.getTransportRequired() != null && request.getTransportRequired()) {
-            if (isBlank(request.getTransportRoute())) {
-                throw new IllegalArgumentException("Transport route is required");
-            }
-            if (isBlank(request.getTransportVehicleNo())) {
-                throw new IllegalArgumentException("Vehicle number is required");
+            if (isBlank(request.getTransportStopName())) {
+                throw new IllegalArgumentException("Transport stop is required");
             }
         }
         if (Boolean.TRUE.equals(request.getHostelRequired())) {
@@ -178,6 +181,7 @@ public class StudentService {
         student.setTransportRequired(Boolean.TRUE.equals(request.getTransportRequired()));
         student.setTransportRoute(trim(request.getTransportRoute()));
         student.setTransportVehicleNo(trim(request.getTransportVehicleNo()));
+        student.setTransportStopName(trim(request.getTransportStopName()));
         boolean hasHostelPayload =
                 request.getHostelRequired() != null
                         || request.getHostelName() != null
@@ -261,6 +265,7 @@ public class StudentService {
         response.setTransportRequired(Boolean.TRUE.equals(student.getTransportRequired()));
         response.setTransportRoute(student.getTransportRoute());
         response.setTransportVehicleNo(student.getTransportVehicleNo());
+        response.setTransportStopName(student.getTransportStopName());
         response.setHostelRequired(Boolean.TRUE.equals(student.getHostelRequired()));
         response.setHostelName(student.getHostelName());
         response.setHostelRoomNo(student.getHostelRoomNo());

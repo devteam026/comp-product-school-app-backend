@@ -81,6 +81,9 @@ public class Student {
     @Column(name = "transport_vehicle_no")
     private String transportVehicleNo;
 
+    @Column(name = "transport_stop_name")
+    private String transportStopName;
+
     @Column(name = "hostel_required")
     private Boolean hostelRequired;
 
@@ -295,6 +298,14 @@ public class Student {
 
     public void setTransportVehicleNo(String transportVehicleNo) {
         this.transportVehicleNo = transportVehicleNo;
+    }
+
+    public String getTransportStopName() {
+        return transportStopName;
+    }
+
+    public void setTransportStopName(String transportStopName) {
+        this.transportStopName = transportStopName;
     }
 
     public Boolean getHostelRequired() {
