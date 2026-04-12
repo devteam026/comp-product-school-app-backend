@@ -8,13 +8,28 @@ public class StudentUpsertRequest {
     private String gender;
     private String dateOfBirth;
     private String admissionNumber;
+    private String registerNo;
     private String rollNumber;
     private String address;
+    private String session;
+    private String fatherName;
+    private String motherName;
     private String parentName;
     private String parentRelation;
     private String parentPhone;
+    private String parentWhatsapp;
     private String parentEmail;
     private String parentOccupation;
+    private Boolean transportRequired;
+    private String transportRoute;
+    private String transportVehicleNo;
+    private String transportStopName;
+    private Boolean hostelRequired;
+    private String hostelName;
+    private String hostelRoomNo;
+    private String previousSchoolName;
+    private String previousQualification;
+    private String studentPassword;
     private String status;
     private String feeType;
     private String profilePhotoKey;
@@ -75,6 +90,14 @@ public class StudentUpsertRequest {
         this.admissionNumber = admissionNumber;
     }
 
+    public String getRegisterNo() {
+        return registerNo;
+    }
+
+    public void setRegisterNo(String registerNo) {
+        this.registerNo = registerNo;
+    }
+
     public String getRollNumber() {
         return rollNumber;
     }
@@ -89,6 +112,30 @@ public class StudentUpsertRequest {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public String getSession() {
+        return session;
+    }
+
+    public void setSession(String session) {
+        this.session = session;
+    }
+
+    public String getFatherName() {
+        return fatherName;
+    }
+
+    public void setFatherName(String fatherName) {
+        this.fatherName = fatherName;
+    }
+
+    public String getMotherName() {
+        return motherName;
+    }
+
+    public void setMotherName(String motherName) {
+        this.motherName = motherName;
     }
 
     public String getParentName() {
@@ -115,6 +162,14 @@ public class StudentUpsertRequest {
         this.parentPhone = parentPhone;
     }
 
+    public String getParentWhatsapp() {
+        return parentWhatsapp;
+    }
+
+    public void setParentWhatsapp(String parentWhatsapp) {
+        this.parentWhatsapp = parentWhatsapp;
+    }
+
     public String getParentEmail() {
         return parentEmail;
     }
@@ -131,6 +186,85 @@ public class StudentUpsertRequest {
         this.parentOccupation = parentOccupation;
     }
 
+    public Boolean getTransportRequired() {
+        return transportRequired;
+    }
+
+    public void setTransportRequired(Boolean transportRequired) {
+        this.transportRequired = transportRequired;
+    }
+
+    public String getTransportRoute() {
+        return transportRoute;
+    }
+
+    public void setTransportRoute(String transportRoute) {
+        this.transportRoute = transportRoute;
+    }
+
+    public String getTransportVehicleNo() {
+        return transportVehicleNo;
+    }
+
+    public void setTransportVehicleNo(String transportVehicleNo) {
+        this.transportVehicleNo = transportVehicleNo;
+    }
+
+    public String getTransportStopName() {
+        return transportStopName;
+    }
+
+    public void setTransportStopName(String transportStopName) {
+        this.transportStopName = transportStopName;
+    }
+
+    public Boolean getHostelRequired() {
+        return hostelRequired;
+    }
+
+    public void setHostelRequired(Boolean hostelRequired) {
+        this.hostelRequired = hostelRequired;
+    }
+
+    public String getHostelName() {
+        return hostelName;
+    }
+
+    public void setHostelName(String hostelName) {
+        this.hostelName = hostelName;
+    }
+
+    public String getHostelRoomNo() {
+        return hostelRoomNo;
+    }
+
+    public void setHostelRoomNo(String hostelRoomNo) {
+        this.hostelRoomNo = hostelRoomNo;
+    }
+
+    public String getPreviousSchoolName() {
+        return previousSchoolName;
+    }
+
+    public void setPreviousSchoolName(String previousSchoolName) {
+        this.previousSchoolName = previousSchoolName;
+    }
+
+    public String getPreviousQualification() {
+        return previousQualification;
+    }
+
+    public void setPreviousQualification(String previousQualification) {
+        this.previousQualification = previousQualification;
+    }
+
+    public String getStudentPassword() {
+        return studentPassword;
+    }
+
+    public void setStudentPassword(String studentPassword) {
+        this.studentPassword = studentPassword;
+    }
     public String getStatus() {
         return status;
     }

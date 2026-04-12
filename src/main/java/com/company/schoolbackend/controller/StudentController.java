@@ -1,5 +1,6 @@
 package com.company.schoolbackend.controller;
 
+import com.company.schoolbackend.dto.GuardianInfo;
 import com.company.schoolbackend.dto.StudentResponse;
 import com.company.schoolbackend.dto.StudentUpsertRequest;
 import com.company.schoolbackend.service.StudentService;
@@ -32,6 +33,11 @@ public class StudentController {
             @RequestParam(value = "q", required = false) String q
     ) {
         return studentService.list(classCode, gender, status, q);
+    }
+
+    @GetMapping("/guardians")
+    public List<GuardianInfo> guardians(@RequestParam(value = "q", required = false) String q) {
+        return studentService.searchGuardians(q);
     }
 
     @GetMapping("/{id}")
