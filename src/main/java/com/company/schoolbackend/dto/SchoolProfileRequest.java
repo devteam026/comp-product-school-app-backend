@@ -12,6 +12,8 @@ public class SchoolProfileRequest {
     private String brandName;
     private String appTitle;
     private String appDescription;
+    private String address;
+    private String phone;
 
     public String getSchoolName() {
         return schoolName;
@@ -98,6 +100,22 @@ public class SchoolProfileRequest {
 
     public void setAppDescription(String appDescription) {
         this.appDescription = appDescription;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
 }

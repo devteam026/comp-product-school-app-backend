@@ -31,6 +31,8 @@ public class SchoolProfileService {
             created.setBrandName("School Portal");
             created.setAppTitle("School Portal");
             created.setAppDescription("School management dashboard");
+            created.setAddress("");
+            created.setPhone("");
             created.setUpdatedAt(OffsetDateTime.now());
             return repository.save(created);
         });
@@ -56,6 +58,8 @@ public class SchoolProfileService {
         profile.setBrandName(nullToEmpty(request.getBrandName()));
         profile.setAppTitle(nullToEmpty(request.getAppTitle()));
         profile.setAppDescription(nullToEmpty(request.getAppDescription()));
+        profile.setAddress(nullToEmpty(request.getAddress()));
+        profile.setPhone(nullToEmpty(request.getPhone()));
         profile.setUpdatedAt(OffsetDateTime.now());
         return toResponse(repository.save(profile));
     }
@@ -73,6 +77,8 @@ public class SchoolProfileService {
         response.setBrandName(profile.getBrandName());
         response.setAppTitle(profile.getAppTitle());
         response.setAppDescription(profile.getAppDescription());
+        response.setAddress(profile.getAddress());
+        response.setPhone(profile.getPhone());
         return response;
     }
 

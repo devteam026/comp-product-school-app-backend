@@ -45,6 +45,12 @@ public class SchoolProfile {
     @Column(name = "app_description")
     private String appDescription;
 
+    @Column(length = 500)
+    private String address;
+
+    @Column(length = 50)
+    private String phone;
+
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 
@@ -142,6 +148,22 @@ public class SchoolProfile {
 
     public void setAppDescription(String appDescription) {
         this.appDescription = appDescription;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     public OffsetDateTime getUpdatedAt() {
