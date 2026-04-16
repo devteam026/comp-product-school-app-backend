@@ -7,14 +7,14 @@ import com.company.schoolbackend.dto.DashboardResponse;
 import com.company.schoolbackend.dto.FeeStats;
 import com.company.schoolbackend.entity.AttendanceRecord;
 import com.company.schoolbackend.entity.AttendanceStatus;
-import com.company.schoolbackend.entity.FeeType;
 import com.company.schoolbackend.entity.Gender;
-import com.company.schoolbackend.entity.Payment;
+import com.company.schoolbackend.entity.FeeDue;
+import com.company.schoolbackend.entity.FeeDueStatus;
 import com.company.schoolbackend.entity.Student;
 import com.company.schoolbackend.entity.StudentStatus;
 import com.company.schoolbackend.repository.AttendanceRecordRepository;
+import com.company.schoolbackend.repository.FeeDueRepository;
 import com.company.schoolbackend.repository.LeaveRequestRepository;
-import com.company.schoolbackend.repository.PaymentRepository;
 import com.company.schoolbackend.repository.StudentRepository;
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
@@ -24,7 +24,6 @@ import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
@@ -32,18 +31,18 @@ import org.springframework.stereotype.Service;
 public class DashboardService {
     private final StudentRepository studentRepository;
     private final AttendanceRecordRepository attendanceRecordRepository;
-    private final PaymentRepository paymentRepository;
+    private final FeeDueRepository feeDueRepository;
     private final LeaveRequestRepository leaveRequestRepository;
 
     public DashboardService(
             StudentRepository studentRepository,
             AttendanceRecordRepository attendanceRecordRepository,
-            PaymentRepository paymentRepository,
+            FeeDueRepository feeDueRepository,
             LeaveRequestRepository leaveRequestRepository
     ) {
         this.studentRepository = studentRepository;
         this.attendanceRecordRepository = attendanceRecordRepository;
-        this.paymentRepository = paymentRepository;
+        this.feeDueRepository = feeDueRepository;
         this.leaveRequestRepository = leaveRequestRepository;
     }
 
@@ -70,16 +69,13 @@ public class DashboardService {
         int notRecorded = Math.max(0, studentIds.size() - todayRecords.size());
 
         String month = today.toString().substring(0, 7);
-        List<Payment> monthPayments = paymentRepository.findByMonthsContains(month);
-        Set<String> paidStudentIds = monthPayments.stream().map(Payment::getStudentId).collect(Collectors.toSet());
-        BigDecimal collectedAmount = monthPayments.stream()
-                .map(Payment::getAmount)
-                .filter(a -> a != null)
+        List<FeeDue> monthDues = feeDueRepository.findByDueDateStartingWith(month);
+        int paidCount = (int) monthDues.stream().filter(d -> d.getStatus() == FeeDueStatus.PAID).count();
+        int unpaidCount = (int) monthDues.stream().filter(d -> d.getStatus() == FeeDueStatus.UNPAID).count();
+        int partialCount = (int) monthDues.stream().filter(d -> d.getStatus() == FeeDueStatus.PARTIAL).count();
+        BigDecimal collectedAmount = monthDues.stream()
+                .map(d -> d.getAmount().subtract(d.getRemainingAmount()))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        int freeCount = (int) students.stream().filter(s -> s.getFeeType() == FeeType.Free).count();
-        int paidCount = (int) students.stream().filter(s -> s.getFeeType() == FeeType.Paid && paidStudentIds.contains(s.getId())).count();
-        int unpaidCount = (int) students.stream().filter(s -> s.getFeeType() == FeeType.Paid && !paidStudentIds.contains(s.getId())).count();
 
         // New admissions this month
         YearMonth currentMonth = YearMonth.now();
@@ -122,7 +118,7 @@ public class DashboardService {
         classAttendance.sort((a, b) -> a.getClassCode().compareToIgnoreCase(b.getClassCode()));
         classStudentCounts.sort((a, b) -> a.getClassCode().compareToIgnoreCase(b.getClassCode()));
 
-        FeeStats feeStats = new FeeStats(paidCount, unpaidCount, freeCount);
+        FeeStats feeStats = new FeeStats(paidCount, unpaidCount, partialCount);
         feeStats.setCollectedAmount(collectedAmount);
 
         DashboardResponse response = new DashboardResponse();

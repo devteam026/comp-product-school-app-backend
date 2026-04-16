@@ -10,4 +10,5 @@ public interface FeeDueRepository extends JpaRepository<FeeDue, Long> {
     List<FeeDue> findByStudentIdAndStatusOrderByDueDateAsc(String studentId, FeeDueStatus status);
     List<FeeDue> findByStatusOrderByDueDateAsc(FeeDueStatus status);
     List<FeeDue> findByStudentIdAndFeeTypeIdAndDueDate(String studentId, Long feeTypeId, String dueDate);
+    List<FeeDue> findByDueDateStartingWith(String monthPrefix);
 }
