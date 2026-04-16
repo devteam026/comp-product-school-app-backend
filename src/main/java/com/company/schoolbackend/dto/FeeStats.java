@@ -4,6 +4,7 @@ public class FeeStats {
     private int paid;
     private int unpaid;
     private int free;
+    private java.math.BigDecimal collectedAmount;
 
     public FeeStats() {}
 
@@ -35,5 +36,13 @@ public class FeeStats {
 
     public void setFree(int free) {
         this.free = free;
+    }
+
+    public java.math.BigDecimal getCollectedAmount() {
+        return collectedAmount;
+    }
+
+    public void setCollectedAmount(java.math.BigDecimal collectedAmount) {
+        this.collectedAmount = collectedAmount;
     }
 }

@@ -12,6 +12,8 @@ public class DashboardResponse {
   private List<DailyAttendancePoint> dailyAttendance = new ArrayList<>();
   private List<ClassAttendancePoint> classAttendance = new ArrayList<>();
   private List<ClassAttendancePoint> classStudentCounts = new ArrayList<>();
+  private int newAdmissionsThisMonth;
+  private int pendingLeaveCount;
 
     public int getTotalStudents() {
         return totalStudents;
@@ -75,5 +77,21 @@ public class DashboardResponse {
 
   public void setClassStudentCounts(List<ClassAttendancePoint> classStudentCounts) {
     this.classStudentCounts = classStudentCounts;
+  }
+
+  public int getNewAdmissionsThisMonth() {
+    return newAdmissionsThisMonth;
+  }
+
+  public void setNewAdmissionsThisMonth(int newAdmissionsThisMonth) {
+    this.newAdmissionsThisMonth = newAdmissionsThisMonth;
+  }
+
+  public int getPendingLeaveCount() {
+    return pendingLeaveCount;
+  }
+
+  public void setPendingLeaveCount(int pendingLeaveCount) {
+    this.pendingLeaveCount = pendingLeaveCount;
   }
 }

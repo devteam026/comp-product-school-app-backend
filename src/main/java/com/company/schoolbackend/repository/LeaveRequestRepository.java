@@ -22,4 +22,6 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
             LocalDate startDate,
             String status
     );
+
+    long countByStatus(String status);
 }
