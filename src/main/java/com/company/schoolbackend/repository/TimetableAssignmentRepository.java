@@ -15,4 +15,6 @@ public interface TimetableAssignmentRepository extends JpaRepository<TimetableAs
     Optional<TimetableAssignment> findByWeekKeyAndPeriodIdAndTeacherIdAndIdNot(String weekKey, Long periodId, Long teacherId, Long id);
     Optional<TimetableAssignment> findByWeekKeyAndPeriodIdAndClassIdAndIdNot(String weekKey, Long periodId, Long classId, Long id);
     List<TimetableAssignment> findByWeekKeyAndClassIdAndPeriodIdIn(String weekKey, Long classId, List<Long> periodIds);
+    void deleteByPeriodId(Long periodId);
+    void deleteBySubjectId(Long subjectId);
 }

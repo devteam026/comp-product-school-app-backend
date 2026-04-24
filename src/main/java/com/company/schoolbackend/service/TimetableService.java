@@ -24,6 +24,7 @@ import com.company.schoolbackend.repository.TeacherSubjectRepository;
 import com.company.schoolbackend.repository.TeacherUnavailabilityRepository;
 import com.company.schoolbackend.repository.TimetableAssignmentRepository;
 import com.company.schoolbackend.repository.TimetablePeriodRepository;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class TimetableService {
@@ -72,6 +74,16 @@ public class TimetableService {
         } else {
             assignments = assignmentRepository.findByWeekKey(key);
         }
+        if (classId != null && teacherId != null) {
+            assignments = assignments.stream()
+                    .filter(a -> a.getTeacherId().equals(teacherId))
+                    .collect(Collectors.toList());
+        }
+        if (classId != null && subjectId != null) {
+            assignments = assignments.stream()
+                    .filter(a -> a.getSubjectId().equals(subjectId))
+                    .collect(Collectors.toList());
+        }
 
         List<TimetablePeriod> periods = periodRepository.findAll();
         List<Employee> teachers = employeeRepository.findAll().stream()
@@ -103,7 +115,9 @@ public class TimetableService {
         response.setWeekKey(key);
         response.setPeriods(periods.stream()
                 .map(p -> new PeriodDto(p.getId(), p.getDayOfWeek(), p.getPeriodNo(),
-                        p.getStartTime().toString(), p.getEndTime().toString()))
+                        p.getStartTime().toString(), p.getEndTime().toString(),
+                        p.getStartDate() != null ? p.getStartDate().toString() : null,
+                        p.getEndDate() != null ? p.getEndDate().toString() : null))
                 .collect(Collectors.toList()));
         response.setAssignments(assignments.stream()
                 .map(a -> new TimetableAssignmentDto(a.getId(), a.getTeacherId(), a.getClassId(),
@@ -157,7 +171,9 @@ public class TimetableService {
         return new SubjectDto(saved.getId(), saved.getName(), saved.getColor());
     }
 
+    @Transactional
     public void deleteSubject(Long id) {
+        assignmentRepository.deleteBySubjectId(id);
         subjectRepository.deleteById(id);
     }
 
@@ -167,7 +183,9 @@ public class TimetableService {
                 : periodRepository.findByClassId(classId);
         return periods.stream()
                 .map(p -> new PeriodDto(p.getId(), p.getDayOfWeek(), p.getPeriodNo(),
-                        p.getStartTime().toString(), p.getEndTime().toString()))
+                        p.getStartTime().toString(), p.getEndTime().toString(),
+                        p.getStartDate() != null ? p.getStartDate().toString() : null,
+                        p.getEndDate() != null ? p.getEndDate().toString() : null))
                 .collect(Collectors.toList());
     }
 
@@ -183,9 +201,13 @@ public class TimetableService {
         period.setPeriodNo(request.getPeriodNo());
         period.setStartTime(LocalTime.parse(request.getStartTime()));
         period.setEndTime(LocalTime.parse(request.getEndTime()));
+        period.setStartDate(request.getStartDate() != null ? LocalDate.parse(request.getStartDate()) : null);
+        period.setEndDate(request.getEndDate() != null ? LocalDate.parse(request.getEndDate()) : null);
         TimetablePeriod saved = periodRepository.save(period);
         return new PeriodDto(saved.getId(), saved.getDayOfWeek(), saved.getPeriodNo(),
-                saved.getStartTime().toString(), saved.getEndTime().toString());
+                saved.getStartTime().toString(), saved.getEndTime().toString(),
+                saved.getStartDate() != null ? saved.getStartDate().toString() : null,
+                saved.getEndDate() != null ? saved.getEndDate().toString() : null);
     }
 
     public PeriodDto updatePeriod(Long id, TimetablePeriodRequest request) {
@@ -200,12 +222,18 @@ public class TimetableService {
         period.setPeriodNo(request.getPeriodNo());
         period.setStartTime(LocalTime.parse(request.getStartTime()));
         period.setEndTime(LocalTime.parse(request.getEndTime()));
+        period.setStartDate(request.getStartDate() != null ? LocalDate.parse(request.getStartDate()) : null);
+        period.setEndDate(request.getEndDate() != null ? LocalDate.parse(request.getEndDate()) : null);
         TimetablePeriod saved = periodRepository.save(period);
         return new PeriodDto(saved.getId(), saved.getDayOfWeek(), saved.getPeriodNo(),
-                saved.getStartTime().toString(), saved.getEndTime().toString());
+                saved.getStartTime().toString(), saved.getEndTime().toString(),
+                saved.getStartDate() != null ? saved.getStartDate().toString() : null,
+                saved.getEndDate() != null ? saved.getEndDate().toString() : null);
     }
 
+    @Transactional
     public void deletePeriod(Long id) {
+        assignmentRepository.deleteByPeriodId(id);
         periodRepository.deleteById(id);
     }
 

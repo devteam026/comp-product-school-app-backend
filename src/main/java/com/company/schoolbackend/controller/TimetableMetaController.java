@@ -66,7 +66,9 @@ public class TimetableMetaController {
         List<TimetablePeriod> periods = periodRepository.findAll();
         return periods.stream()
                 .map(p -> new PeriodDto(p.getId(), p.getDayOfWeek(), p.getPeriodNo(),
-                        p.getStartTime().toString(), p.getEndTime().toString()))
+                        p.getStartTime().toString(), p.getEndTime().toString(),
+                        p.getStartDate() != null ? p.getStartDate().toString() : null,
+                        p.getEndDate() != null ? p.getEndDate().toString() : null))
                 .collect(Collectors.toList());
     }
 }

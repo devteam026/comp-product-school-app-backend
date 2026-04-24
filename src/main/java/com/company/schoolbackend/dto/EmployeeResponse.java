@@ -46,6 +46,8 @@ public class EmployeeResponse {
     private String idProofKey;
     private String resumeKey;
     private EmployeeTeacherDetailsDto teacherDetails;
+    private String loginRole;
+    private Boolean loginActive;
 
     public Long getId() {
         return id;
@@ -405,5 +407,21 @@ public class EmployeeResponse {
 
     public void setTeacherDetails(EmployeeTeacherDetailsDto teacherDetails) {
         this.teacherDetails = teacherDetails;
+    }
+
+    public String getLoginRole() {
+        return loginRole;
+    }
+
+    public void setLoginRole(String loginRole) {
+        this.loginRole = loginRole;
+    }
+
+    public Boolean getLoginActive() {
+        return loginActive;
+    }
+
+    public void setLoginActive(Boolean loginActive) {
+        this.loginActive = loginActive;
     }
 }

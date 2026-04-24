@@ -6,6 +6,8 @@ public class TimetablePeriodRequest {
     private Integer periodNo;
     private String startTime;
     private String endTime;
+    private String startDate;
+    private String endDate;
 
     public Long getClassId() { return classId; }
     public void setClassId(Long classId) { this.classId = classId; }
@@ -17,4 +19,8 @@ public class TimetablePeriodRequest {
     public void setStartTime(String startTime) { this.startTime = startTime; }
     public String getEndTime() { return endTime; }
     public void setEndTime(String endTime) { this.endTime = endTime; }
+    public String getStartDate() { return startDate; }
+    public void setStartDate(String startDate) { this.startDate = startDate; }
+    public String getEndDate() { return endDate; }
+    public void setEndDate(String endDate) { this.endDate = endDate; }
 }
