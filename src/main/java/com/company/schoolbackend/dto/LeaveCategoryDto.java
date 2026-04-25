@@ -3,7 +3,7 @@ package com.company.schoolbackend.dto;
 public class LeaveCategoryDto {
     private Long id;
     private String name;
-    private String role;
+    private java.util.List<String> roles;
     private Integer maxDays;
     private String periodType;
     private Integer maxPerPeriod;
@@ -13,8 +13,8 @@ public class LeaveCategoryDto {
     public void setId(Long id) { this.id = id; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
-    public String getRole() { return role; }
-    public void setRole(String role) { this.role = role; }
+    public java.util.List<String> getRoles() { return roles; }
+    public void setRoles(java.util.List<String> roles) { this.roles = roles; }
     public Integer getMaxDays() { return maxDays; }
     public void setMaxDays(Integer maxDays) { this.maxDays = maxDays; }
     public String getPeriodType() { return periodType; }

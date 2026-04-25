@@ -15,6 +15,7 @@ import com.company.schoolbackend.repository.LeaveCategoryRepository;
 import com.company.schoolbackend.repository.LeaveRequestRepository;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -42,24 +43,42 @@ public class LeaveService {
     public List<LeaveCategoryDto> listCategories(String role, boolean includeInactive) {
         List<LeaveCategory> categories = includeInactive
                 ? categoryRepository.findAll()
-                : (role == null || role.isBlank()
-                    ? categoryRepository.findByActiveTrueOrderByNameAsc()
-                    : categoryRepository.findByRoleAndActiveTrueOrderByNameAsc(role));
+                : categoryRepository.findByActiveTrueOrderByNameAsc();
+        if (role != null && !role.isBlank()) {
+            String normalizedRole = role.trim().toLowerCase();
+            categories = categories.stream()
+                    .filter(c -> {
+                        if (c.getRole() == null) return false;
+                        for (String r : c.getRole().split(",")) {
+                            if (r.trim().equalsIgnoreCase(normalizedRole)) return true;
+                        }
+                        return false;
+                    })
+                    .collect(Collectors.toList());
+        }
         return categories.stream().map(this::toDto).collect(Collectors.toList());
     }
 
     public LeaveCategoryDto upsertCategory(Long id, LeaveCategoryRequest request) {
         if (request == null || request.getName() == null || request.getName().isBlank()
-                || request.getRole() == null || request.getRole().isBlank()
+                || request.getRoles() == null || request.getRoles().isEmpty()
                 || request.getMaxDays() == null) {
             throw new IllegalArgumentException("Missing fields");
         }
         if ((request.getPeriodType() == null) != (request.getMaxPerPeriod() == null)) {
             throw new IllegalArgumentException("Period type and max per period are required together");
         }
+        String rolesValue = request.getRoles().stream()
+                .map(r -> r.trim().toLowerCase())
+                .filter(r -> !r.isBlank())
+                .distinct()
+                .collect(java.util.stream.Collectors.joining(","));
+        if (rolesValue.isBlank()) {
+            throw new IllegalArgumentException("At least one role is required");
+        }
         LeaveCategory category = id == null ? new LeaveCategory() : categoryRepository.findById(id).orElse(new LeaveCategory());
         category.setName(request.getName().trim());
-        category.setRole(request.getRole().trim().toLowerCase());
+        category.setRole(rolesValue);
         category.setMaxDays(request.getMaxDays());
         if (request.getPeriodType() != null) {
             String periodType = request.getPeriodType().trim().toUpperCase();
@@ -199,7 +218,15 @@ public class LeaveService {
         LeaveCategoryDto dto = new LeaveCategoryDto();
         dto.setId(category.getId());
         dto.setName(category.getName());
-        dto.setRole(category.getRole());
+        String stored = category.getRole();
+        if (stored == null || stored.isBlank()) {
+            dto.setRoles(java.util.List.of());
+        } else {
+            dto.setRoles(Arrays.stream(stored.split(","))
+                    .map(String::trim)
+                    .filter(r -> !r.isBlank())
+                    .collect(Collectors.toList()));
+        }
         dto.setMaxDays(category.getMaxDays());
         dto.setPeriodType(category.getPeriodType());
         dto.setMaxPerPeriod(category.getMaxPerPeriod());

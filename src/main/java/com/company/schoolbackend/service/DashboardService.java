@@ -14,6 +14,7 @@ import com.company.schoolbackend.entity.Student;
 import com.company.schoolbackend.entity.StudentStatus;
 import com.company.schoolbackend.repository.AttendanceRecordRepository;
 import com.company.schoolbackend.repository.FeeDueRepository;
+import com.company.schoolbackend.repository.EmployeeRepository;
 import com.company.schoolbackend.repository.LeaveRequestRepository;
 import com.company.schoolbackend.repository.StudentRepository;
 import java.math.BigDecimal;
@@ -33,17 +34,20 @@ public class DashboardService {
     private final AttendanceRecordRepository attendanceRecordRepository;
     private final FeeDueRepository feeDueRepository;
     private final LeaveRequestRepository leaveRequestRepository;
+    private final EmployeeRepository employeeRepository;
 
     public DashboardService(
             StudentRepository studentRepository,
             AttendanceRecordRepository attendanceRecordRepository,
             FeeDueRepository feeDueRepository,
-            LeaveRequestRepository leaveRequestRepository
+            LeaveRequestRepository leaveRequestRepository,
+            EmployeeRepository employeeRepository
     ) {
         this.studentRepository = studentRepository;
         this.attendanceRecordRepository = attendanceRecordRepository;
         this.feeDueRepository = feeDueRepository;
         this.leaveRequestRepository = leaveRequestRepository;
+        this.employeeRepository = employeeRepository;
     }
 
     public DashboardResponse getDashboard(String classCode) {
@@ -90,6 +94,12 @@ public class DashboardService {
         // Pending leave requests
         long pendingLeaves = leaveRequestRepository.countByStatus("Pending");
 
+        // Employee stats
+        int totalEmployees = (int) employeeRepository.count();
+        int onLeaveEmployees = (int) leaveRequestRepository
+                .countByStatusAndFromDateLessThanEqualAndToDateGreaterThanEqual("Approved", today, today);
+        int workingEmployees = totalEmployees - onLeaveEmployees;
+
         List<DailyAttendancePoint> daily = new ArrayList<>();
         for (int i = 29; i >= 0; i -= 1) {
             LocalDate date = today.minusDays(i);
@@ -132,6 +142,9 @@ public class DashboardService {
         response.setClassStudentCounts(classStudentCounts);
         response.setNewAdmissionsThisMonth((int) newAdmissions);
         response.setPendingLeaveCount((int) pendingLeaves);
+        response.setTotalEmployees(totalEmployees);
+        response.setWorkingEmployees(workingEmployees);
+        response.setOnLeaveEmployees(onLeaveEmployees);
         return response;
     }
 

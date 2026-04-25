@@ -5,6 +5,7 @@ public class ClassDto {
     private String name;
     private String section;
     private String classCode;
+    private Integer maxStrength;
 
     public ClassDto() {}
 
@@ -15,6 +16,14 @@ public class ClassDto {
         this.classCode = classCode;
     }
 
+    public ClassDto(Long id, String name, String section, String classCode, Integer maxStrength) {
+        this.id = id;
+        this.name = name;
+        this.section = section;
+        this.classCode = classCode;
+        this.maxStrength = maxStrength;
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getName() { return name; }
@@ -23,4 +32,6 @@ public class ClassDto {
     public void setSection(String section) { this.section = section; }
     public String getClassCode() { return classCode; }
     public void setClassCode(String classCode) { this.classCode = classCode; }
+    public Integer getMaxStrength() { return maxStrength; }
+    public void setMaxStrength(Integer maxStrength) { this.maxStrength = maxStrength; }
 }

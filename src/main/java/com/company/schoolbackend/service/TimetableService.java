@@ -140,8 +140,11 @@ public class TimetableService {
         List<Subject> subjects = classId == null
                 ? subjectRepository.findAll()
                 : subjectRepository.findByClassId(classId);
+        Map<Long, String> classCodeMap = classRepository.findAll().stream()
+                .collect(Collectors.toMap(SchoolClass::getId, SchoolClass::getClassCode));
         return subjects.stream()
-                .map(s -> new SubjectDto(s.getId(), s.getName(), s.getColor()))
+                .map(s -> new SubjectDto(s.getId(), s.getName(), s.getColor(),
+                        s.getClassId() != null ? classCodeMap.get(s.getClassId()) : null))
                 .collect(Collectors.toList());
     }
 
@@ -181,11 +184,14 @@ public class TimetableService {
         List<TimetablePeriod> periods = classId == null
                 ? periodRepository.findAll()
                 : periodRepository.findByClassId(classId);
+        Map<Long, String> classCodeMap = classRepository.findAll().stream()
+                .collect(Collectors.toMap(SchoolClass::getId, SchoolClass::getClassCode));
         return periods.stream()
                 .map(p -> new PeriodDto(p.getId(), p.getDayOfWeek(), p.getPeriodNo(),
                         p.getStartTime().toString(), p.getEndTime().toString(),
                         p.getStartDate() != null ? p.getStartDate().toString() : null,
-                        p.getEndDate() != null ? p.getEndDate().toString() : null))
+                        p.getEndDate() != null ? p.getEndDate().toString() : null,
+                        p.getClassId(), classCodeMap.getOrDefault(p.getClassId(), "")))
                 .collect(Collectors.toList());
     }
 
@@ -195,6 +201,26 @@ public class TimetableService {
                 || request.getStartTime() == null || request.getEndTime() == null) {
             throw new IllegalArgumentException("Missing fields");
         }
+        if (request.getPeriodNo() < 1) {
+            throw new IllegalArgumentException("Period number must be 1 or greater");
+        }
+        LocalTime start = LocalTime.parse(request.getStartTime());
+        LocalTime end = LocalTime.parse(request.getEndTime());
+        if (!end.isAfter(start)) {
+            throw new IllegalArgumentException("End time must be after start time");
+        }
+        if (request.getStartDate() != null && request.getEndDate() != null) {
+            LocalDate sd = LocalDate.parse(request.getStartDate());
+            LocalDate ed = LocalDate.parse(request.getEndDate());
+            if (ed.isBefore(sd)) {
+                throw new IllegalArgumentException("End date must be on or after start date");
+            }
+        }
+        periodRepository.findByClassIdAndDayOfWeekAndPeriodNo(
+                request.getClassId(), request.getDayOfWeek().trim().toUpperCase(), request.getPeriodNo())
+                .ifPresent(existing -> {
+                    throw new IllegalArgumentException("A period already exists for this day and period number");
+                });
         TimetablePeriod period = new TimetablePeriod();
         period.setClassId(request.getClassId());
         period.setDayOfWeek(request.getDayOfWeek().trim().toUpperCase());
@@ -216,6 +242,26 @@ public class TimetableService {
                 || request.getStartTime() == null || request.getEndTime() == null) {
             throw new IllegalArgumentException("Missing fields");
         }
+        if (request.getPeriodNo() < 1) {
+            throw new IllegalArgumentException("Period number must be 1 or greater");
+        }
+        LocalTime start = LocalTime.parse(request.getStartTime());
+        LocalTime end = LocalTime.parse(request.getEndTime());
+        if (!end.isAfter(start)) {
+            throw new IllegalArgumentException("End time must be after start time");
+        }
+        if (request.getStartDate() != null && request.getEndDate() != null) {
+            LocalDate sd = LocalDate.parse(request.getStartDate());
+            LocalDate ed = LocalDate.parse(request.getEndDate());
+            if (ed.isBefore(sd)) {
+                throw new IllegalArgumentException("End date must be on or after start date");
+            }
+        }
+        periodRepository.findByClassIdAndDayOfWeekAndPeriodNoAndIdNot(
+                request.getClassId(), request.getDayOfWeek().trim().toUpperCase(), request.getPeriodNo(), id)
+                .ifPresent(existing -> {
+                    throw new IllegalArgumentException("A period already exists for this day and period number");
+                });
         TimetablePeriod period = periodRepository.findById(id).orElseThrow();
         period.setClassId(request.getClassId());
         period.setDayOfWeek(request.getDayOfWeek().trim().toUpperCase());

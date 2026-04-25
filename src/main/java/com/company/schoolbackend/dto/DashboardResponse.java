@@ -14,6 +14,9 @@ public class DashboardResponse {
   private List<ClassAttendancePoint> classStudentCounts = new ArrayList<>();
   private int newAdmissionsThisMonth;
   private int pendingLeaveCount;
+  private int totalEmployees;
+  private int workingEmployees;
+  private int onLeaveEmployees;
 
     public int getTotalStudents() {
         return totalStudents;
@@ -93,5 +96,29 @@ public class DashboardResponse {
 
   public void setPendingLeaveCount(int pendingLeaveCount) {
     this.pendingLeaveCount = pendingLeaveCount;
+  }
+
+  public int getTotalEmployees() {
+    return totalEmployees;
+  }
+
+  public void setTotalEmployees(int totalEmployees) {
+    this.totalEmployees = totalEmployees;
+  }
+
+  public int getWorkingEmployees() {
+    return workingEmployees;
+  }
+
+  public void setWorkingEmployees(int workingEmployees) {
+    this.workingEmployees = workingEmployees;
+  }
+
+  public int getOnLeaveEmployees() {
+    return onLeaveEmployees;
+  }
+
+  public void setOnLeaveEmployees(int onLeaveEmployees) {
+    this.onLeaveEmployees = onLeaveEmployees;
   }
 }

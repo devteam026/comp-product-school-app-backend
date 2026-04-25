@@ -24,4 +24,7 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     );
 
     long countByStatus(String status);
+
+    long countByStatusAndFromDateLessThanEqualAndToDateGreaterThanEqual(
+            String status, LocalDate toDate, LocalDate fromDate);
 }

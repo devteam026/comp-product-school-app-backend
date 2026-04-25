@@ -8,6 +8,8 @@ public class PeriodDto {
     private String endTime;
     private String startDate;
     private String endDate;
+    private Long classId;
+    private String classCode;
 
     public PeriodDto() {}
 
@@ -20,6 +22,19 @@ public class PeriodDto {
         this.endTime = endTime;
         this.startDate = startDate;
         this.endDate = endDate;
+    }
+
+    public PeriodDto(Long id, String dayOfWeek, Integer periodNo, String startTime, String endTime,
+                     String startDate, String endDate, Long classId, String classCode) {
+        this.id = id;
+        this.dayOfWeek = dayOfWeek;
+        this.periodNo = periodNo;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.classId = classId;
+        this.classCode = classCode;
     }
 
     public Long getId() { return id; }
@@ -36,4 +51,8 @@ public class PeriodDto {
     public void setStartDate(String startDate) { this.startDate = startDate; }
     public String getEndDate() { return endDate; }
     public void setEndDate(String endDate) { this.endDate = endDate; }
+    public Long getClassId() { return classId; }
+    public void setClassId(Long classId) { this.classId = classId; }
+    public String getClassCode() { return classCode; }
+    public void setClassCode(String classCode) { this.classCode = classCode; }
 }
