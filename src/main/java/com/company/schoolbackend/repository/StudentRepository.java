@@ -46,15 +46,13 @@ public interface StudentRepository extends JpaRepository<Student, String> {
     """)
     List<GuardianInfo> searchGuardians(@Param("q") String q);
 
-    List<Student> findByTransportRouteAndTransportVehicleNoAndTransportRequiredTrueAndStatus(
-            String transportRoute,
-            String transportVehicleNo,
+    List<Student> findByTransportStopNameInAndTransportRequiredTrueAndStatus(
+            List<String> stopNames,
             StudentStatus status
     );
 
-    long countByTransportRouteAndTransportVehicleNoAndTransportRequiredTrueAndStatus(
-            String transportRoute,
-            String transportVehicleNo,
+    long countByTransportStopNameInAndTransportRequiredTrueAndStatus(
+            List<String> stopNames,
             StudentStatus status
     );
 }

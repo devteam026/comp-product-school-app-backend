@@ -36,6 +36,9 @@ public class AttendanceService {
             throw new IllegalArgumentException("Date is required");
         }
         LocalDate date = LocalDate.parse(request.getDate());
+        if (holidayService.findByDate(date).isPresent()) {
+            throw new IllegalArgumentException("Cannot save attendance on a holiday");
+        }
         List<AttendanceRecordDto> records = request.getRecords();
         if (records == null || records.isEmpty()) {
             return new AttendanceSaveResponse(true, date.toString(), 0);

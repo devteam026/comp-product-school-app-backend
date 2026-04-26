@@ -10,4 +10,6 @@ public interface TransportStoppageRepository extends JpaRepository<TransportStop
     List<TransportStoppage> findByRouteNameAndActiveTrueOrderByStopNameAsc(String routeName);
     TransportStoppage findFirstByRouteNameIgnoreCaseAndStopNameIgnoreCase(String routeName, String stopName);
     TransportStoppage findFirstByStopNameIgnoreCase(String stopName);
+    List<TransportStoppage> findByRouteName(String routeName);
+    void deleteByRouteName(String routeName);
 }
