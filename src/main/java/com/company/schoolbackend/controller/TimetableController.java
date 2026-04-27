@@ -42,7 +42,7 @@ public class TimetableController {
             @RequestParam(value = "subjectId", required = false) Long subjectId,
             HttpServletRequest request
     ) {
-        if (!isAdmin(request)) {
+        if (!isAdminOrTeacher(request)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
         return ResponseEntity.ok(timetableService.getTimetable(week, classId, teacherId, subjectId));
@@ -192,6 +192,15 @@ public class TimetableController {
         Object profileObj = request.getAttribute("userProfile");
         if (profileObj instanceof UserProfile profile) {
             return "admin".equalsIgnoreCase(profile.getRole());
+        }
+        return false;
+    }
+
+    private boolean isAdminOrTeacher(HttpServletRequest request) {
+        Object profileObj = request.getAttribute("userProfile");
+        if (profileObj instanceof UserProfile profile) {
+            String role = profile.getRole();
+            return "admin".equalsIgnoreCase(role) || "teacher".equalsIgnoreCase(role);
         }
         return false;
     }

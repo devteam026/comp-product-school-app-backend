@@ -3,14 +3,15 @@ package com.company.schoolbackend.dto;
 public class FeeStats {
     private int paid;
     private int unpaid;
-    private int free;
+    private int partial;
+    private java.math.BigDecimal collectedAmount;
 
     public FeeStats() {}
 
-    public FeeStats(int paid, int unpaid, int free) {
+    public FeeStats(int paid, int unpaid, int partial) {
         this.paid = paid;
         this.unpaid = unpaid;
-        this.free = free;
+        this.partial = partial;
     }
 
     public int getPaid() {
@@ -29,11 +30,19 @@ public class FeeStats {
         this.unpaid = unpaid;
     }
 
-    public int getFree() {
-        return free;
+    public int getPartial() {
+        return partial;
     }
 
-    public void setFree(int free) {
-        this.free = free;
+    public void setPartial(int partial) {
+        this.partial = partial;
+    }
+
+    public java.math.BigDecimal getCollectedAmount() {
+        return collectedAmount;
+    }
+
+    public void setCollectedAmount(java.math.BigDecimal collectedAmount) {
+        this.collectedAmount = collectedAmount;
     }
 }

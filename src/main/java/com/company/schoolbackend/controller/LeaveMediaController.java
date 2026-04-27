@@ -8,6 +8,7 @@ import com.company.schoolbackend.service.R2Service;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 
@@ -48,6 +50,33 @@ public class LeaveMediaController {
         PresignedPutObjectRequest presigned = r2Service.createUploadUrl(contentType, fileName, objectKey);
         PhotoUploadResponse response = new PhotoUploadResponse(presigned.url().toString(), objectKey, r2Service.formatExpiry(presigned));
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Server-side upload (browser → backend → R2).
+     * Avoids the need for CORS on the R2 bucket.
+     */
+    @PostMapping(value = "/upload-file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadFile(
+            @RequestParam("file") MultipartFile file,
+            HttpServletRequest request
+    ) {
+        if (!isAuthenticated(request)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        if (file.getSize() > (long) r2Service.getMaxUploadKb() * 1024L) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "File too large. Max " + r2Service.getMaxUploadKb() + " KB."));
+        }
+        try {
+            String objectKey = r2Service.generateObjectKey(file.getOriginalFilename(), LEAVE_PREFIX);
+            String contentType = file.getContentType() != null ? file.getContentType() : "application/octet-stream";
+            r2Service.uploadFile(objectKey, file.getBytes(), contentType);
+            return ResponseEntity.ok(Map.of("objectKey", objectKey));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("error", "Upload failed: " + e.getMessage()));
+        }
     }
 
     @GetMapping("/{id}/attachment-url")

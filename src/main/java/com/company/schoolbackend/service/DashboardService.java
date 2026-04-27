@@ -7,19 +7,24 @@ import com.company.schoolbackend.dto.DashboardResponse;
 import com.company.schoolbackend.dto.FeeStats;
 import com.company.schoolbackend.entity.AttendanceRecord;
 import com.company.schoolbackend.entity.AttendanceStatus;
-import com.company.schoolbackend.entity.FeeType;
 import com.company.schoolbackend.entity.Gender;
+import com.company.schoolbackend.entity.FeeDue;
+import com.company.schoolbackend.entity.FeeDueStatus;
 import com.company.schoolbackend.entity.Student;
 import com.company.schoolbackend.entity.StudentStatus;
 import com.company.schoolbackend.repository.AttendanceRecordRepository;
-import com.company.schoolbackend.repository.PaymentRepository;
+import com.company.schoolbackend.repository.FeeDueRepository;
+import com.company.schoolbackend.repository.EmployeeRepository;
+import com.company.schoolbackend.repository.LeaveRequestRepository;
 import com.company.schoolbackend.repository.StudentRepository;
+import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
@@ -27,16 +32,22 @@ import org.springframework.stereotype.Service;
 public class DashboardService {
     private final StudentRepository studentRepository;
     private final AttendanceRecordRepository attendanceRecordRepository;
-    private final PaymentRepository paymentRepository;
+    private final FeeDueRepository feeDueRepository;
+    private final LeaveRequestRepository leaveRequestRepository;
+    private final EmployeeRepository employeeRepository;
 
     public DashboardService(
             StudentRepository studentRepository,
             AttendanceRecordRepository attendanceRecordRepository,
-            PaymentRepository paymentRepository
+            FeeDueRepository feeDueRepository,
+            LeaveRequestRepository leaveRequestRepository,
+            EmployeeRepository employeeRepository
     ) {
         this.studentRepository = studentRepository;
         this.attendanceRecordRepository = attendanceRecordRepository;
-        this.paymentRepository = paymentRepository;
+        this.feeDueRepository = feeDueRepository;
+        this.leaveRequestRepository = leaveRequestRepository;
+        this.employeeRepository = employeeRepository;
     }
 
     public DashboardResponse getDashboard(String classCode) {
@@ -62,15 +73,35 @@ public class DashboardService {
         int notRecorded = Math.max(0, studentIds.size() - todayRecords.size());
 
         String month = today.toString().substring(0, 7);
-        Set<String> paidStudentIds = paymentRepository.findByMonthsContains(month)
-                .stream().map(payment -> payment.getStudentId()).collect(Collectors.toSet());
+        List<FeeDue> monthDues = feeDueRepository.findByDueDateStartingWith(month);
+        int paidCount = (int) monthDues.stream().filter(d -> d.getStatus() == FeeDueStatus.PAID).count();
+        int unpaidCount = (int) monthDues.stream().filter(d -> d.getStatus() == FeeDueStatus.UNPAID).count();
+        int partialCount = (int) monthDues.stream().filter(d -> d.getStatus() == FeeDueStatus.PARTIAL).count();
+        BigDecimal collectedAmount = monthDues.stream()
+                .map(d -> d.getAmount().subtract(d.getRemainingAmount()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        int freeCount = (int) students.stream().filter(s -> s.getFeeType() == FeeType.Free).count();
-        int paidCount = (int) students.stream().filter(s -> s.getFeeType() == FeeType.Paid && paidStudentIds.contains(s.getId())).count();
-        int unpaidCount = (int) students.stream().filter(s -> s.getFeeType() == FeeType.Paid && !paidStudentIds.contains(s.getId())).count();
+        // New admissions this month
+        YearMonth currentMonth = YearMonth.now();
+        OffsetDateTime monthStart = currentMonth.atDay(1).atStartOfDay().atOffset(java.time.ZoneOffset.UTC);
+        OffsetDateTime monthEnd = currentMonth.atEndOfMonth().atTime(23, 59, 59).atOffset(java.time.ZoneOffset.UTC);
+        long newAdmissions = studentRepository.findAll().stream()
+                .filter(s -> s.getCreatedAt() != null
+                        && !s.getCreatedAt().isBefore(monthStart)
+                        && !s.getCreatedAt().isAfter(monthEnd))
+                .count();
+
+        // Pending leave requests
+        long pendingLeaves = leaveRequestRepository.countByStatus("Pending");
+
+        // Employee stats
+        int totalEmployees = (int) employeeRepository.count();
+        int onLeaveEmployees = (int) leaveRequestRepository
+                .countByStatusAndFromDateLessThanEqualAndToDateGreaterThanEqual("Approved", today, today);
+        int workingEmployees = totalEmployees - onLeaveEmployees;
 
         List<DailyAttendancePoint> daily = new ArrayList<>();
-        for (int i = 4; i >= 0; i -= 1) {
+        for (int i = 29; i >= 0; i -= 1) {
             LocalDate date = today.minusDays(i);
             List<AttendanceRecord> records = studentIds.isEmpty()
                     ? new ArrayList<>()
@@ -97,15 +128,23 @@ public class DashboardService {
         classAttendance.sort((a, b) -> a.getClassCode().compareToIgnoreCase(b.getClassCode()));
         classStudentCounts.sort((a, b) -> a.getClassCode().compareToIgnoreCase(b.getClassCode()));
 
+        FeeStats feeStats = new FeeStats(paidCount, unpaidCount, partialCount);
+        feeStats.setCollectedAmount(collectedAmount);
+
         DashboardResponse response = new DashboardResponse();
         response.setTotalStudents(total);
         response.setMaleCount(male);
         response.setFemaleCount(female);
         response.setAttendanceToday(new AttendanceSummary(present, absent, notRecorded));
-        response.setFeeStats(new FeeStats(paidCount, unpaidCount, freeCount));
+        response.setFeeStats(feeStats);
         response.setDailyAttendance(daily);
         response.setClassAttendance(classAttendance);
         response.setClassStudentCounts(classStudentCounts);
+        response.setNewAdmissionsThisMonth((int) newAdmissions);
+        response.setPendingLeaveCount((int) pendingLeaves);
+        response.setTotalEmployees(totalEmployees);
+        response.setWorkingEmployees(workingEmployees);
+        response.setOnLeaveEmployees(onLeaveEmployees);
         return response;
     }
 

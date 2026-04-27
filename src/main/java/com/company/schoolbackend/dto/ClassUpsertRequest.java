@@ -6,6 +6,7 @@ public class ClassUpsertRequest {
     private String section;
     private String grade;
     private Boolean active;
+    private Integer maxStrength;
 
     public String getClassCode() { return classCode; }
     public void setClassCode(String classCode) { this.classCode = classCode; }
@@ -17,4 +18,6 @@ public class ClassUpsertRequest {
     public void setGrade(String grade) { this.grade = grade; }
     public Boolean getActive() { return active; }
     public void setActive(Boolean active) { this.active = active; }
+    public Integer getMaxStrength() { return maxStrength; }
+    public void setMaxStrength(Integer maxStrength) { this.maxStrength = maxStrength; }
 }

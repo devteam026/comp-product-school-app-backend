@@ -9,6 +9,7 @@ import com.company.schoolbackend.service.EmployeeService;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -82,6 +83,15 @@ public class EmployeeController {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
         employeeService.assignRole(id, requestBody.getRole(), requestBody.getPassword(), requestBody.getUpdatePassword(), requestBody.getActive());
+        return ResponseEntity.ok(java.util.Map.of("ok", true));
+    }
+
+    @DeleteMapping("/{id}/role")
+    public ResponseEntity<?> deleteRole(@PathVariable Long id, HttpServletRequest request) {
+        if (!isAdmin(request)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        employeeService.deleteRole(id);
         return ResponseEntity.ok(java.util.Map.of("ok", true));
     }
 

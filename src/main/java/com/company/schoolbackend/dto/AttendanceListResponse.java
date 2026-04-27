@@ -8,6 +8,8 @@ public class AttendanceListResponse {
     private List<AttendanceRecordDto> records = new ArrayList<>();
     private int presentCount;
     private int absentCount;
+    private boolean isHoliday;
+    private String holidayName;
 
     public String getDate() {
         return date;
@@ -39,5 +41,21 @@ public class AttendanceListResponse {
 
     public void setAbsentCount(int absentCount) {
         this.absentCount = absentCount;
+    }
+
+    public boolean isHoliday() {
+        return isHoliday;
+    }
+
+    public void setHoliday(boolean isHoliday) {
+        this.isHoliday = isHoliday;
+    }
+
+    public String getHolidayName() {
+        return holidayName;
+    }
+
+    public void setHolidayName(String holidayName) {
+        this.holidayName = holidayName;
     }
 }

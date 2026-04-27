@@ -112,9 +112,7 @@ public class StudentService {
         if (isBlank(request.getParentWhatsapp())) {
             throw new IllegalArgumentException("Parent WhatsApp number is required");
         }
-        if (isBlank(request.getParentEmail())) {
-            throw new IllegalArgumentException("Parent email is required");
-        }
+        // Email is optional
         if (isBlank(request.getParentOccupation())) {
             throw new IllegalArgumentException("Parent occupation is required");
         }

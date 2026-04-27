@@ -6,6 +6,7 @@ import com.company.schoolbackend.dto.AttendanceSaveRequest;
 import com.company.schoolbackend.dto.AttendanceSaveResponse;
 import com.company.schoolbackend.entity.AttendanceRecord;
 import com.company.schoolbackend.entity.AttendanceStatus;
+import com.company.schoolbackend.entity.Holiday;
 import com.company.schoolbackend.entity.StudentStatus;
 import com.company.schoolbackend.repository.AttendanceRecordRepository;
 import com.company.schoolbackend.repository.StudentRepository;
@@ -15,16 +16,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AttendanceService {
     private final AttendanceRecordRepository attendanceRecordRepository;
     private final StudentRepository studentRepository;
+    private final HolidayService holidayService;
 
-    public AttendanceService(AttendanceRecordRepository attendanceRecordRepository, StudentRepository studentRepository) {
+    public AttendanceService(AttendanceRecordRepository attendanceRecordRepository, StudentRepository studentRepository, HolidayService holidayService) {
         this.attendanceRecordRepository = attendanceRecordRepository;
         this.studentRepository = studentRepository;
+        this.holidayService = holidayService;
     }
 
     public AttendanceSaveResponse save(AttendanceSaveRequest request) {
@@ -32,6 +36,9 @@ public class AttendanceService {
             throw new IllegalArgumentException("Date is required");
         }
         LocalDate date = LocalDate.parse(request.getDate());
+        if (holidayService.findByDate(date).isPresent()) {
+            throw new IllegalArgumentException("Cannot save attendance on a holiday");
+        }
         List<AttendanceRecordDto> records = request.getRecords();
         if (records == null || records.isEmpty()) {
             return new AttendanceSaveResponse(true, date.toString(), 0);
@@ -100,6 +107,11 @@ public class AttendanceService {
         response.setRecords(dtos);
         response.setPresentCount(present);
         response.setAbsentCount(absent);
+        Optional<Holiday> holiday = holidayService.findByDate(date);
+        if (holiday.isPresent()) {
+            response.setHoliday(true);
+            response.setHolidayName(holiday.get().getName());
+        }
         return response;
     }
 

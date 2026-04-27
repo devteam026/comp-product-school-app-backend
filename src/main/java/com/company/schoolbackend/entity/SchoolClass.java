@@ -24,6 +24,9 @@ public class SchoolClass {
 
     private String section;
 
+    @Column(name = "max_strength")
+    private Integer maxStrength;
+
     @Column(nullable = false)
     private boolean active = true;
 
@@ -65,6 +68,14 @@ public class SchoolClass {
 
     public void setSection(String section) {
         this.section = section;
+    }
+
+    public Integer getMaxStrength() {
+        return maxStrength;
+    }
+
+    public void setMaxStrength(Integer maxStrength) {
+        this.maxStrength = maxStrength;
     }
 
     public boolean isActive() {

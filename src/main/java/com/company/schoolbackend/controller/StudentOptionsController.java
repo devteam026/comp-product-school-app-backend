@@ -96,14 +96,10 @@ public class StudentOptionsController {
         if (hostel == null || hostel.isBlank()) {
             rooms = hostelRoomRepository.findAllByOrderByRoomNumberAsc();
         } else {
-            Long hostelId = hostelRepository.findAllByOrderByNameAsc().stream()
-                    .filter(item -> hostel.trim().equalsIgnoreCase(item.getName()))
-                    .map(Hostel::getId)
-                    .findFirst()
-                    .orElse(null);
-            rooms = hostelId == null
+            Hostel found = hostelRepository.findFirstByNameIgnoreCase(hostel.trim());
+            rooms = found == null
                     ? java.util.Collections.emptyList()
-                    : hostelRoomRepository.findByHostelIdOrderByRoomNumberAsc(hostelId);
+                    : hostelRoomRepository.findByHostelIdOrderByRoomNumberAsc(found.getId());
         }
         return rooms.stream()
                 .filter(room -> {

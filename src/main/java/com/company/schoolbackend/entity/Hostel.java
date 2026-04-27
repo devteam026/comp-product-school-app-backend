@@ -35,6 +35,9 @@ public class Hostel {
     @Column(name = "school_id")
     private Long schoolId;
 
+    @Column(nullable = false, columnDefinition = "TINYINT(1) DEFAULT 1")
+    private boolean active = true;
+
     public Long getId() {
         return id;
     }
@@ -97,5 +100,13 @@ public class Hostel {
 
     public void setSchoolId(Long schoolId) {
         this.schoolId = schoolId;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 }

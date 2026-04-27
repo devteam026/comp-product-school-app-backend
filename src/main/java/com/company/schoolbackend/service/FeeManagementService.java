@@ -189,6 +189,13 @@ public class FeeManagementService {
         if (month == null || month.isBlank()) {
             month = LocalDate.now().toString().substring(0, 7);
         }
+        // Block regenerate for past months — only current and future months are allowed
+        String currentMonth = LocalDate.now().toString().substring(0, 7); // "YYYY-MM"
+        if (month.compareTo(currentMonth) < 0) {
+            throw new IllegalArgumentException(
+                "Regenerate is not allowed for past months. Selected: " + month + ", Current: " + currentMonth
+            );
+        }
         List<Student> students = studentRepository.findAll().stream()
                 .filter(s -> s.getStatus() == StudentStatus.Active)
                 .filter(s -> classCode.equalsIgnoreCase(s.getClassCode()))

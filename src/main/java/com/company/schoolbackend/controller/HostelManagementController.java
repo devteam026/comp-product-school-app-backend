@@ -46,27 +46,37 @@ public class HostelManagementController {
 
     @PostMapping
     public Hostel createHostel(@RequestBody Hostel request) {
+        if (request.getName() == null || request.getName().isBlank()) {
+            throw new IllegalArgumentException("Hostel name is required.");
+        }
         Hostel hostel = new Hostel();
-        hostel.setName(request.getName());
-        hostel.setType(request.getType());
+        hostel.setName(request.getName().trim());
+        hostel.setType(request.getType() != null ? request.getType() : "BOYS");
         hostel.setCapacity(request.getCapacity());
-        hostel.setWardenId(request.getWardenId());
+        // Treat 0 as null so we don't write invalid FK-like values to the DB
+        hostel.setWardenId(request.getWardenId() != null && request.getWardenId() != 0 ? request.getWardenId() : null);
         hostel.setContactNumber(request.getContactNumber());
         hostel.setAddress(request.getAddress());
-        hostel.setSchoolId(request.getSchoolId());
+        hostel.setSchoolId(request.getSchoolId() != null && request.getSchoolId() != 0 ? request.getSchoolId() : null);
+        hostel.setActive(request.isActive());
         return hostelRepository.save(hostel);
     }
 
     @PutMapping("/{id}")
     public Hostel updateHostel(@PathVariable Long id, @RequestBody Hostel request) {
+        if (request.getName() == null || request.getName().isBlank()) {
+            throw new IllegalArgumentException("Hostel name is required.");
+        }
         Hostel hostel = hostelRepository.findById(id).orElseThrow();
-        hostel.setName(request.getName());
-        hostel.setType(request.getType());
+        hostel.setName(request.getName().trim());
+        hostel.setType(request.getType() != null ? request.getType() : hostel.getType());
         hostel.setCapacity(request.getCapacity());
-        hostel.setWardenId(request.getWardenId());
+        // Treat 0 as null so we don't write invalid FK-like values to the DB
+        hostel.setWardenId(request.getWardenId() != null && request.getWardenId() != 0 ? request.getWardenId() : null);
         hostel.setContactNumber(request.getContactNumber());
         hostel.setAddress(request.getAddress());
-        hostel.setSchoolId(request.getSchoolId());
+        hostel.setSchoolId(request.getSchoolId() != null && request.getSchoolId() != 0 ? request.getSchoolId() : null);
+        hostel.setActive(request.isActive());
         return hostelRepository.save(hostel);
     }
 
@@ -89,8 +99,11 @@ public class HostelManagementController {
         room.setFloor(request.getFloor());
         room.setRoomType(request.getRoomType());
         room.setCapacity(request.getCapacity());
-        room.setCurrentOccupancy(request.getCurrentOccupancy());
+        room.setCurrentOccupancy(request.getCurrentOccupancy() != null ? request.getCurrentOccupancy() : 0);
         room.setStatus(request.getStatus());
+        // Populate hostel_name to satisfy the NOT NULL column constraint
+        String hostelName = resolveHostelName(request.getHostelId(), request.getHostelName());
+        room.setHostelName(hostelName);
         return hostelRoomRepository.save(room);
     }
 
@@ -102,8 +115,11 @@ public class HostelManagementController {
         room.setFloor(request.getFloor());
         room.setRoomType(request.getRoomType());
         room.setCapacity(request.getCapacity());
-        room.setCurrentOccupancy(request.getCurrentOccupancy());
+        room.setCurrentOccupancy(request.getCurrentOccupancy() != null ? request.getCurrentOccupancy() : 0);
         room.setStatus(request.getStatus());
+        // Keep hostel_name in sync
+        String hostelName = resolveHostelName(request.getHostelId(), request.getHostelName());
+        room.setHostelName(hostelName);
         return hostelRoomRepository.save(room);
     }
 
@@ -226,6 +242,23 @@ public class HostelManagementController {
         }
         clearStudentHostel(studentId);
         return ResponseEntity.ok(java.util.Map.of("ok", true));
+    }
+
+    /**
+     * Resolves the hostel name for a room. Tries the provided name first,
+     * then falls back to a DB lookup by hostelId, then an empty string.
+     * This ensures the NOT NULL hostel_name column is always populated.
+     */
+    private String resolveHostelName(Long hostelId, String providedName) {
+        if (providedName != null && !providedName.isBlank()) {
+            return providedName.trim();
+        }
+        if (hostelId != null) {
+            return hostelRepository.findById(hostelId)
+                    .map(Hostel::getName)
+                    .orElse("");
+        }
+        return "";
     }
 
     private void refreshRoomOccupancy(Long roomId) {

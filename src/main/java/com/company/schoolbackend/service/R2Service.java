@@ -5,6 +5,8 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
@@ -15,21 +17,38 @@ import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignReques
 
 @Service
 public class R2Service {
+    private final S3Client s3Client;
     private final S3Presigner presigner;
     private final String bucket;
     private final String prefix;
     private final int maxUploadKb;
 
     public R2Service(
+            S3Client s3Client,
             S3Presigner presigner,
             @Value("${r2.bucket}") String bucket,
             @Value("${r2.prefix:student_prof_pic/}") String prefix,
             @Value("${r2.max-upload-kb:600}") int maxUploadKb
     ) {
+        this.s3Client = s3Client;
         this.presigner = presigner;
         this.bucket = bucket;
         this.prefix = prefix.endsWith("/") ? prefix : prefix + "/";
         this.maxUploadKb = maxUploadKb;
+    }
+
+    /**
+     * Upload file bytes directly to R2 (server-side). Avoids browser CORS issues.
+     */
+    public String uploadFile(String objectKey, byte[] content, String contentType) {
+        PutObjectRequest putRequest = PutObjectRequest.builder()
+                .bucket(bucket)
+                .key(objectKey)
+                .contentType(contentType)
+                .contentLength((long) content.length)
+                .build();
+        s3Client.putObject(putRequest, RequestBody.fromBytes(content));
+        return objectKey;
     }
 
     public PresignedPutObjectRequest createUploadUrl(String contentType, String fileName, String objectKey) {

@@ -65,7 +65,7 @@ public class ClassController {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
         List<ClassDto> list = schoolClassRepository.findAll().stream()
-                .map(c -> new ClassDto(c.getId(), c.getName(), c.getSection(), c.getClassCode()))
+                .map(c -> new ClassDto(c.getId(), c.getName(), c.getSection(), c.getClassCode(), c.getMaxStrength()))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(list);
     }
@@ -76,7 +76,7 @@ public class ClassController {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
         SchoolClass saved = upsert(null, requestBody);
-        return ResponseEntity.ok(new ClassDto(saved.getId(), saved.getName(), saved.getSection(), saved.getClassCode()));
+        return ResponseEntity.ok(new ClassDto(saved.getId(), saved.getName(), saved.getSection(), saved.getClassCode(), saved.getMaxStrength()));
     }
 
     @PutMapping("/manage/{id}")
@@ -85,7 +85,7 @@ public class ClassController {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
         SchoolClass saved = upsert(id, requestBody);
-        return ResponseEntity.ok(new ClassDto(saved.getId(), saved.getName(), saved.getSection(), saved.getClassCode()));
+        return ResponseEntity.ok(new ClassDto(saved.getId(), saved.getName(), saved.getSection(), saved.getClassCode(), saved.getMaxStrength()));
     }
 
     @DeleteMapping("/manage/{id}")
@@ -107,6 +107,7 @@ public class ClassController {
         entity.setName(request.getName().trim());
         entity.setSection(request.getSection());
         entity.setGrade(request.getGrade());
+        entity.setMaxStrength(request.getMaxStrength());
         if (request.getActive() != null) {
             entity.setActive(request.getActive());
         }

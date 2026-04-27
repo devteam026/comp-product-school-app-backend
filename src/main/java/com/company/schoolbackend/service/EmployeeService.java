@@ -145,7 +145,7 @@ public class EmployeeService {
         }
         Employee employee = employeeRepository.findById(employeeId).orElseThrow();
         UserRole role = UserRole.valueOf(roleValue.trim().toLowerCase());
-        String username = String.valueOf(employee.getId());
+        String username = String.format("%04d", employee.getId());
         AppUser user = appUserRepository.findByUsername(username).orElse(new AppUser());
         if (user.getId() == null) {
             user.setUsername(username);
@@ -160,11 +160,23 @@ public class EmployeeService {
         appUserRepository.save(user);
     }
 
+    public void deleteRole(Long employeeId) {
+        if (employeeId == null) {
+            throw new IllegalArgumentException("Employee required");
+        }
+        String username = String.format("%04d", employeeId);
+        AppUser user = appUserRepository.findByUsername(username)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST, "No login role found for this employee."));
+        teacherClassRepository.deleteByTeacherUserId(user.getId());
+        appUserRepository.delete(user);
+    }
+
     public void assignTeacherClasses(Long employeeId, List<String> classCodes) {
         if (employeeId == null) {
             throw new IllegalArgumentException("Employee required");
         }
-        AppUser user = appUserRepository.findByUsername(String.valueOf(employeeId))
+        AppUser user = appUserRepository.findByUsername(String.format("%04d", employeeId))
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
                         "Assign login role first for this employee."
@@ -241,6 +253,10 @@ public class EmployeeService {
             dto.setClassTeacher(teacherDetails.getClassTeacher());
             response.setTeacherDetails(dto);
         }
+        appUserRepository.findByUsername(String.format("%04d", employee.getId())).ifPresent(user -> {
+            response.setLoginRole(user.getRole().name());
+            response.setLoginActive(user.isActive());
+        });
         return response;
     }
 
