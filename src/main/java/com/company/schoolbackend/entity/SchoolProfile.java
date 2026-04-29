@@ -51,6 +51,9 @@ public class SchoolProfile {
     @Column(length = 50)
     private String phone;
 
+    @Column(name = "dept_designation_config", length = 5000)
+    private String deptDesignationConfig;
+
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 
@@ -164,6 +167,14 @@ public class SchoolProfile {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public String getDeptDesignationConfig() {
+        return deptDesignationConfig;
+    }
+
+    public void setDeptDesignationConfig(String deptDesignationConfig) {
+        this.deptDesignationConfig = deptDesignationConfig;
     }
 
     public OffsetDateTime getUpdatedAt() {

@@ -64,6 +64,14 @@ public class EmployeeController {
         return ResponseEntity.ok(employeeService.upsert(requestBody));
     }
 
+    @GetMapping("/{id}/classes")
+    public ResponseEntity<List<String>> getClasses(@PathVariable Long id, HttpServletRequest request) {
+        if (!isAdmin(request)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        return ResponseEntity.ok(employeeService.getTeacherClasses(id));
+    }
+
     @PostMapping("/{id}/classes")
     public ResponseEntity<?> assignClasses(@PathVariable Long id,
                                            @RequestBody EmployeeClassAssignRequest requestBody,
@@ -83,6 +91,15 @@ public class EmployeeController {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
         employeeService.assignRole(id, requestBody.getRole(), requestBody.getPassword(), requestBody.getUpdatePassword(), requestBody.getActive());
+        return ResponseEntity.ok(java.util.Map.of("ok", true));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delete(@PathVariable Long id, HttpServletRequest request) {
+        if (!isAdmin(request)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        employeeService.delete(id);
         return ResponseEntity.ok(java.util.Map.of("ok", true));
     }
 

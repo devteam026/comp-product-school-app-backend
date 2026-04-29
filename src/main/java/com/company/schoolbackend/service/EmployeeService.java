@@ -20,6 +20,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class EmployeeService {
@@ -40,7 +41,7 @@ public class EmployeeService {
     }
 
     public List<EmployeeResponse> list() {
-        List<Employee> employees = employeeRepository.findAll();
+        List<Employee> employees = employeeRepository.findAllByDeletedAtIsNull();
         List<EmployeeResponse> responses = new ArrayList<>();
         for (Employee employee : employees) {
             EmployeeTeacherDetails details = teacherDetailsRepository.findByEmployeeId(employee.getId()).orElse(null);
@@ -50,7 +51,7 @@ public class EmployeeService {
     }
 
     public EmployeeResponse get(Long id) {
-        Employee employee = employeeRepository.findById(id).orElseThrow();
+        Employee employee = employeeRepository.findByIdAndDeletedAtIsNull(id).orElseThrow();
         EmployeeTeacherDetails details = teacherDetailsRepository.findByEmployeeId(id).orElse(null);
         return toResponse(employee, details);
     }
@@ -63,7 +64,8 @@ public class EmployeeService {
 
         Employee employee = request.getId() == null
                 ? new Employee()
-                : employeeRepository.findById(request.getId()).orElse(new Employee());
+                : employeeRepository.findByIdAndDeletedAtIsNull(request.getId())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found"));
 
         if (employee.getId() == null) {
             employee.setCreatedAt(OffsetDateTime.now());
@@ -160,6 +162,18 @@ public class EmployeeService {
         appUserRepository.save(user);
     }
 
+    public void delete(Long employeeId) {
+        if (employeeId == null) {
+            throw new IllegalArgumentException("Employee required");
+        }
+        Employee employee = employeeRepository.findByIdAndDeletedAtIsNull(employeeId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found"));
+        employee.setDeletedAt(OffsetDateTime.now());
+        employee.setUpdatedAt(OffsetDateTime.now());
+        employeeRepository.save(employee);
+    }
+
+    @Transactional
     public void deleteRole(Long employeeId) {
         if (employeeId == null) {
             throw new IllegalArgumentException("Employee required");
@@ -172,6 +186,7 @@ public class EmployeeService {
         appUserRepository.delete(user);
     }
 
+    @Transactional
     public void assignTeacherClasses(Long employeeId, List<String> classCodes) {
         if (employeeId == null) {
             throw new IllegalArgumentException("Employee required");
@@ -197,6 +212,17 @@ public class EmployeeService {
             tc.setClassCode(code.trim());
             teacherClassRepository.save(tc);
         }
+    }
+
+    public List<String> getTeacherClasses(Long employeeId) {
+        if (employeeId == null) return List.of();
+        AppUser user = appUserRepository.findByUsername(String.format("%04d", employeeId))
+                .orElse(null);
+        if (user == null) return List.of();
+        return teacherClassRepository.findByTeacherUserId(user.getId())
+                .stream()
+                .map(tc -> tc.getClassCode())
+                .collect(java.util.stream.Collectors.toList());
     }
 
     private EmployeeResponse toResponse(Employee employee, EmployeeTeacherDetails teacherDetails) {

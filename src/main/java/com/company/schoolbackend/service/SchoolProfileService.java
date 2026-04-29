@@ -4,7 +4,12 @@ import com.company.schoolbackend.dto.SchoolProfileRequest;
 import com.company.schoolbackend.dto.SchoolProfileResponse;
 import com.company.schoolbackend.entity.SchoolProfile;
 import com.company.schoolbackend.repository.SchoolProfileRepository;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.OffsetDateTime;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -80,6 +85,37 @@ public class SchoolProfileService {
         response.setAddress(profile.getAddress());
         response.setPhone(profile.getPhone());
         return response;
+    }
+
+    public Map<String, List<String>> getDeptDesignations() {
+        SchoolProfile profile = repository.findById(PROFILE_ID).orElse(null);
+        if (profile == null || profile.getDeptDesignationConfig() == null
+                || profile.getDeptDesignationConfig().isBlank()) {
+            return new LinkedHashMap<>();
+        }
+        try {
+            return new ObjectMapper().readValue(profile.getDeptDesignationConfig(),
+                    new TypeReference<Map<String, List<String>>>() {});
+        } catch (Exception e) {
+            return new LinkedHashMap<>();
+        }
+    }
+
+    public void saveDeptDesignations(Map<String, List<String>> config) {
+        SchoolProfile profile = repository.findById(PROFILE_ID).orElseGet(() -> {
+            SchoolProfile created = new SchoolProfile();
+            created.setId(PROFILE_ID);
+            created.setSchoolName("Your School");
+            created.setUpdatedAt(OffsetDateTime.now());
+            return created;
+        });
+        try {
+            profile.setDeptDesignationConfig(new ObjectMapper().writeValueAsString(config));
+            profile.setUpdatedAt(OffsetDateTime.now());
+            repository.save(profile);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to save dept designation config", e);
+        }
     }
 
     private static String nullToEmpty(String value) {
