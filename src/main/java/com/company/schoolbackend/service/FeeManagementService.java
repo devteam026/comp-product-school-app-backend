@@ -4,7 +4,6 @@ import com.company.schoolbackend.dto.FeePaymentDetailResponse;
 import com.company.schoolbackend.dto.FeePaymentRequest;
 import com.company.schoolbackend.dto.FeePaymentResponse;
 import com.company.schoolbackend.entity.DefaultDiscount;
-import com.company.schoolbackend.entity.DiscountApplicableOn;
 import com.company.schoolbackend.entity.DiscountType;
 import com.company.schoolbackend.entity.FeeDue;
 import com.company.schoolbackend.entity.FeeDueStatus;
@@ -154,6 +153,11 @@ public class FeeManagementService {
                     .filter(s -> academicYear.equalsIgnoreCase(s.getAcademicYear()))
                     .collect(Collectors.toList());
         }
+        // When multiple structures exist for the same feeTypeId (fee revisions with
+        // different effectiveFrom dates), keep only the latest one whose effectiveFrom
+        // is on or before the first day of the target month.
+        String monthStart = month + "-01";
+        structures = resolveApplicableStructures(structures, monthStart);
         List<FeeDue> created = new ArrayList<>();
         for (Student student : students) {
             for (FeeStructure structure : structures) {
@@ -208,6 +212,8 @@ public class FeeManagementService {
                     .filter(s -> academicYear.equalsIgnoreCase(s.getAcademicYear()))
                     .collect(Collectors.toList());
         }
+        String monthStartRegen = month + "-01";
+        structures = resolveApplicableStructures(structures, monthStartRegen);
         List<FeeDue> updated = new ArrayList<>();
         for (Student student : students) {
             for (FeeStructure structure : structures) {
@@ -466,11 +472,10 @@ public class FeeManagementService {
             String paymentDate
     ) {
         BigDecimal discount = BigDecimal.ZERO;
-        FeeTypeEntity feeType = feeTypes.get(due.getFeeTypeId());
-        String feeName = feeType == null ? "" : feeType.getName();
+        Long feeTypeId = due.getFeeTypeId();
         for (DefaultDiscount def : defaultDiscounts) {
             if (!def.isActive()) continue;
-            if (!isDiscountApplicable(def.getApplicableOn(), feeName)) continue;
+            if (!isDiscountApplicable(def.getApplicableOn(), feeTypeId, feeTypes)) continue;
             discount = discount.add(applyDiscount(def.getDiscountType(), def.getValue(), due.getRemainingAmount()));
         }
         for (StudentDiscount sd : studentDiscounts) {
@@ -478,7 +483,7 @@ public class FeeManagementService {
             if (!isDateBetween(paymentDate, sd.getStartDate(), sd.getEndDate())) continue;
             DefaultDiscount def = defaultDiscountRepository.findById(sd.getDiscountId()).orElse(null);
             if (def == null) continue;
-            if (!isDiscountApplicable(def.getApplicableOn(), feeName)) continue;
+            if (!isDiscountApplicable(def.getApplicableOn(), feeTypeId, feeTypes)) continue;
             discount = discount.add(applyDiscount(def.getDiscountType(), def.getValue(), due.getRemainingAmount()));
         }
         if (discount.compareTo(due.getRemainingAmount()) > 0) {
@@ -505,16 +510,22 @@ public class FeeManagementService {
         return rule.getValue();
     }
 
-    private static boolean isDiscountApplicable(DiscountApplicableOn applicableOn, String feeName) {
-        if (applicableOn == DiscountApplicableOn.ALL) return true;
-        if (feeName == null) return false;
-        if (applicableOn == DiscountApplicableOn.TUITION) {
-            return feeName.toLowerCase(Locale.ROOT).contains("tuition");
+    private static boolean isDiscountApplicable(String applicableOn, Long feeTypeId, Map<Long, FeeTypeEntity> feeTypes) {
+        if (applicableOn == null || "ALL".equalsIgnoreCase(applicableOn)) return true;
+        // Support legacy enum values (TUITION, TRANSPORT) by matching fee type name
+        if ("TUITION".equalsIgnoreCase(applicableOn)) {
+            FeeTypeEntity ft = feeTypes.get(feeTypeId);
+            return ft != null && ft.getName().toLowerCase(Locale.ROOT).contains("tuition");
         }
-        if (applicableOn == DiscountApplicableOn.TRANSPORT) {
-            return feeName.toLowerCase(Locale.ROOT).contains("transport");
+        if ("TRANSPORT".equalsIgnoreCase(applicableOn)) {
+            FeeTypeEntity ft = feeTypes.get(feeTypeId);
+            return ft != null && ft.getName().toLowerCase(Locale.ROOT).contains("transport");
         }
-        return false;
+        try {
+            return Long.parseLong(applicableOn) == feeTypeId;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
     private static BigDecimal applyDiscount(DiscountType type, BigDecimal value, BigDecimal base) {
@@ -525,15 +536,45 @@ public class FeeManagementService {
         return value;
     }
 
+    /**
+     * For each feeTypeId, keep only the structure with the latest effectiveFrom
+     * that is on or before the given cutoff date (e.g. "2026-05-01").
+     * This ensures fee revisions supersede earlier structures.
+     */
+    private static List<FeeStructure> resolveApplicableStructures(List<FeeStructure> structures, String cutoffDate) {
+        Map<Long, FeeStructure> best = new java.util.LinkedHashMap<>();
+        for (FeeStructure s : structures) {
+            String ef = s.getEffectiveFrom();
+            if (ef == null || ef.compareTo(cutoffDate) > 0) {
+                // effectiveFrom is after the cutoff — not yet applicable
+                continue;
+            }
+            FeeStructure current = best.get(s.getFeeTypeId());
+            if (current == null || ef.compareTo(current.getEffectiveFrom()) > 0) {
+                best.put(s.getFeeTypeId(), s);
+            }
+        }
+        return new ArrayList<>(best.values());
+    }
+
     private static String resolveDueDate(FeeStructure structure, String month) {
         Integer dueDay = structure.getDueDay();
         if (dueDay == null || dueDay < 1 || dueDay > 28) {
             dueDay = 1;
         }
         if (structure.getFrequency() == FeeFrequency.MONTHLY) {
+            // Monthly: due every month on the specified day
             return month + "-" + String.format("%02d", dueDay);
         }
         String effective = structure.getEffectiveFrom();
+        if (structure.getFrequency() == FeeFrequency.YEARLY && effective != null && effective.length() >= 7) {
+            // Yearly: use the month from effectiveFrom but the year from the selected month
+            // e.g. effectiveFrom=2026-04-01, month=2027-04 → dueDate=2027-04-{dueDay}
+            String selectedYear = month.substring(0, 4);
+            String effectiveMonth = effective.substring(5, 7);
+            return selectedYear + "-" + effectiveMonth + "-" + String.format("%02d", dueDay);
+        }
+        // ONE_TIME: due date is fixed to effectiveFrom date
         if (effective != null && effective.length() >= 10) {
             return effective.substring(0, 8) + String.format("%02d", dueDay);
         }

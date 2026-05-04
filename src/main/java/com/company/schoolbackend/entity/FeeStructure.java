@@ -8,10 +8,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "fee_structures")
+@Table(name = "fee_structures", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"class_code", "fee_type_id", "academic_year", "effective_from"})
+})
 public class FeeStructure {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

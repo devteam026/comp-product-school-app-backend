@@ -27,9 +27,8 @@ public class DefaultDiscount {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal value;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "applicable_on", nullable = false, length = 20)
-    private DiscountApplicableOn applicableOn;
+    private String applicableOn;
 
     @Column(nullable = false)
     private boolean active = true;
@@ -66,11 +65,11 @@ public class DefaultDiscount {
         this.value = value;
     }
 
-    public DiscountApplicableOn getApplicableOn() {
+    public String getApplicableOn() {
         return applicableOn;
     }
 
-    public void setApplicableOn(DiscountApplicableOn applicableOn) {
+    public void setApplicableOn(String applicableOn) {
         this.applicableOn = applicableOn;
     }
 

@@ -27,6 +27,38 @@ VALUES (
   'Prabhat@083'
 );
 
+
+INSERT INTO master.tenants (tenant_key, db_url, db_username, db_password)
+VALUES (
+  'demo',
+  'jdbc:mysql://174.138.105.54:3306/demo?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true',
+  'viru',
+  'Viru@083'
+);
+
+
 1. make new tanent as default for services and then restart the app, it will create all required tables
 
+CREATE DATABASE viru_school;
+CREATE USER 'viru'@'%' IDENTIFIED BY 'Viru@083';
+GRANT ALL PRIVILEGES ON  viru_school.* TO 'viru'@'%';
+FLUSH PRIVILEGES;
 
+
+
+CREATE DATABASE demo_school;
+CREATE USER 'demo'@'%' IDENTIFIED BY 'Demo@083';
+GRANT ALL PRIVILEGES ON  demo_school.* TO 'viru'@'%';
+FLUSH PRIVILEGES;
+
+
+
+
+
+INSERT INTO master.tenants (tenant_key, db_url, db_username, db_password)
+VALUES (
+  'demo',
+  'jdbc:mysql://174.138.105.54:3306/demo_school?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true',
+  'demo',
+  'Demo@083'
+);

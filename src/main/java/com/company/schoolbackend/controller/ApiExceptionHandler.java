@@ -4,6 +4,7 @@ import java.time.OffsetDateTime;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -13,6 +14,22 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 @RestControllerAdvice
 public class ApiExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(ApiExceptionHandler.class);
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleDataIntegrity(DataIntegrityViolationException ex) {
+        log.warn("Data integrity violation", ex);
+        String message = "A record with the same values already exists.";
+        String rootMsg = ex.getMostSpecificCause().getMessage();
+        if (rootMsg != null && rootMsg.contains("Duplicate entry")) {
+            message = "Duplicate entry — a record with these values already exists.";
+        }
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                Map.of(
+                        "error", message,
+                        "timestamp", OffsetDateTime.now().toString()
+                )
+        );
+    }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex) {
