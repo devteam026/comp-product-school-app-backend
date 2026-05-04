@@ -17,15 +17,12 @@ public class FineRule {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "days_from", nullable = false)
-    private int daysFrom;
-
-    @Column(name = "days_to", nullable = false)
-    private int daysTo;
+    @Column(name = "fee_type_id", nullable = false)
+    private Long feeTypeId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "fine_type", nullable = false, length = 20)
-    private FineType fineType;
+    @Column(nullable = false, length = 20)
+    private FineType frequency;
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal value;
@@ -41,28 +38,20 @@ public class FineRule {
         this.id = id;
     }
 
-    public int getDaysFrom() {
-        return daysFrom;
+    public Long getFeeTypeId() {
+        return feeTypeId;
     }
 
-    public void setDaysFrom(int daysFrom) {
-        this.daysFrom = daysFrom;
+    public void setFeeTypeId(Long feeTypeId) {
+        this.feeTypeId = feeTypeId;
     }
 
-    public int getDaysTo() {
-        return daysTo;
+    public FineType getFrequency() {
+        return frequency;
     }
 
-    public void setDaysTo(int daysTo) {
-        this.daysTo = daysTo;
-    }
-
-    public FineType getFineType() {
-        return fineType;
-    }
-
-    public void setFineType(FineType fineType) {
-        this.fineType = fineType;
+    public void setFrequency(FineType frequency) {
+        this.frequency = frequency;
     }
 
     public BigDecimal getValue() {

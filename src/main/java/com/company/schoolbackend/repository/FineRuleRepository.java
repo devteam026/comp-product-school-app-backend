@@ -5,5 +5,5 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface FineRuleRepository extends JpaRepository<FineRule, Long> {
-    List<FineRule> findByActiveTrueOrderByDaysFromAsc();
+    List<FineRule> findByActiveTrueOrderByIdAsc();
 }

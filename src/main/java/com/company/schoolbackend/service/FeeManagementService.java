@@ -14,7 +14,6 @@ import com.company.schoolbackend.entity.FeeReceipt;
 import com.company.schoolbackend.entity.FeeStructure;
 import com.company.schoolbackend.entity.FeeTypeEntity;
 import com.company.schoolbackend.entity.FineRule;
-import com.company.schoolbackend.entity.FineType;
 import com.company.schoolbackend.entity.Student;
 import com.company.schoolbackend.entity.StudentDiscount;
 import com.company.schoolbackend.entity.StudentStatus;
@@ -37,7 +36,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -134,7 +132,7 @@ public class FeeManagementService {
     }
 
     @Transactional
-    public List<FeeDue> generateDues(String classCode, String month, String academicYear) {
+    public Map<String, Object> generateDues(String classCode, String month, String academicYear) {
         if (classCode == null || classCode.isBlank()) {
             throw new IllegalArgumentException("Class is required");
         }
@@ -145,20 +143,29 @@ public class FeeManagementService {
                 .filter(s -> s.getStatus() == StudentStatus.Active)
                 .filter(s -> classCode.equalsIgnoreCase(s.getClassCode()))
                 .collect(Collectors.toList());
-        List<FeeStructure> structures = feeStructureRepository.findByClassCodeAndActiveTrueOrderByFeeTypeIdAsc(classCode);
+        List<FeeStructure> allStructures = feeStructureRepository.findByClassCodeAndActiveTrueOrderByFeeTypeIdAsc(classCode);
         Map<Long, FeeTypeEntity> feeTypes = feeTypeRepository.findAll().stream()
                 .collect(Collectors.toMap(FeeTypeEntity::getId, item -> item));
         if (academicYear != null && !academicYear.isBlank()) {
-            structures = structures.stream()
+            allStructures = allStructures.stream()
                     .filter(s -> academicYear.equalsIgnoreCase(s.getAcademicYear()))
                     .collect(Collectors.toList());
         }
+        int totalStructures = (int) allStructures.stream().map(FeeStructure::getFeeTypeId).distinct().count();
         // When multiple structures exist for the same feeTypeId (fee revisions with
         // different effectiveFrom dates), keep only the latest one whose effectiveFrom
         // is on or before the first day of the target month.
         String monthStart = month + "-01";
-        structures = resolveApplicableStructures(structures, monthStart);
+        List<FeeStructure> structures = resolveApplicableStructures(allStructures, monthStart);
+        // Fee types that have structures but are not yet effective for this month
+        List<String> notYetEffective = allStructures.stream()
+                .map(FeeStructure::getFeeTypeId)
+                .distinct()
+                .filter(ftId -> structures.stream().noneMatch(s -> s.getFeeTypeId().equals(ftId)))
+                .map(ftId -> feeTypes.containsKey(ftId) ? feeTypes.get(ftId).getName() : "Fee #" + ftId)
+                .collect(Collectors.toList());
         List<FeeDue> created = new ArrayList<>();
+        int skipped = 0;
         for (Student student : students) {
             for (FeeStructure structure : structures) {
                 String dueDate = resolveDueDate(structure, month);
@@ -166,6 +173,7 @@ public class FeeManagementService {
                         student.getId(), structure.getFeeTypeId(), dueDate
                 );
                 if (!existing.isEmpty()) {
+                    skipped++;
                     continue;
                 }
                 BigDecimal amount = resolveDueAmount(structure, student, feeTypes);
@@ -182,7 +190,13 @@ public class FeeManagementService {
                 created.add(feeDueRepository.save(due));
             }
         }
-        return created;
+        Map<String, Object> result = new java.util.LinkedHashMap<>();
+        result.put("created", created.size());
+        result.put("skipped", skipped);
+        result.put("notYetEffective", notYetEffective);
+        result.put("students", students.size());
+        result.put("structures", totalStructures);
+        return result;
     }
 
     @Transactional
@@ -290,9 +304,15 @@ public class FeeManagementService {
 
     public FineRule saveFineRule(FineRule request) {
         FineRule entity = request.getId() == null ? new FineRule() : fineRuleRepository.findById(request.getId()).orElse(new FineRule());
-        entity.setDaysFrom(request.getDaysFrom());
-        entity.setDaysTo(request.getDaysTo());
-        entity.setFineType(request.getFineType());
+        // Check for duplicate fee type — only one fine rule per fee type allowed
+        Long currentId = entity.getId();
+        boolean duplicate = fineRuleRepository.findAll().stream().anyMatch(r ->
+                r.getFeeTypeId().equals(request.getFeeTypeId()) && (currentId == null || !r.getId().equals(currentId)));
+        if (duplicate) {
+            throw new IllegalArgumentException("A fine rule for this fee type already exists.");
+        }
+        entity.setFeeTypeId(request.getFeeTypeId());
+        entity.setFrequency(request.getFrequency());
         entity.setValue(request.getValue());
         entity.setActive(request.isActive());
         return fineRuleRepository.save(entity);
@@ -329,7 +349,7 @@ public class FeeManagementService {
         List<DefaultDiscount> defaultDiscounts = defaultDiscountRepository.findByActiveTrueOrderByNameAsc();
         List<StudentDiscount> studentDiscounts = studentDiscountRepository.findByStudentId(request.getStudentId())
                 .stream().filter(StudentDiscount::isActive).collect(Collectors.toList());
-        List<FineRule> fineRules = fineRuleRepository.findByActiveTrueOrderByDaysFromAsc();
+        List<FineRule> fineRules = fineRuleRepository.findByActiveTrueOrderByIdAsc();
 
         List<FeePaymentDetail> details = new ArrayList<>();
         BigDecimal totalDue = BigDecimal.ZERO;
@@ -343,7 +363,7 @@ public class FeeManagementService {
         for (FeeDue due : dues) {
             BigDecimal dueAmount = due.getRemainingAmount();
             BigDecimal defaultDisc = calculateDiscount(due, feeTypes, defaultDiscounts, studentDiscounts, paymentDate);
-            BigDecimal fine = calculateFine(due, fineRules, paymentDate);
+            BigDecimal fine = request.isWaiveFine() ? BigDecimal.ZERO : calculateFine(due, fineRules, paymentDate);
             BigDecimal extraDisc = BigDecimal.ZERO;
             if (remainingExtraDiscount.compareTo(BigDecimal.ZERO) > 0) {
                 extraDisc = remainingExtraDiscount.min(dueAmount.subtract(defaultDisc).max(BigDecimal.ZERO));
@@ -497,17 +517,33 @@ public class FeeManagementService {
         LocalDate dueDate = LocalDate.parse(due.getDueDate());
         LocalDate payDate = LocalDate.parse(paymentDate);
         if (!payDate.isAfter(dueDate)) return BigDecimal.ZERO;
-        long days = java.time.temporal.ChronoUnit.DAYS.between(dueDate, payDate);
-        Optional<FineRule> match = rules.stream()
-                .filter(rule -> rule.isActive())
-                .filter(rule -> days >= rule.getDaysFrom() && days <= rule.getDaysTo())
-                .findFirst();
-        if (match.isEmpty()) return BigDecimal.ZERO;
-        FineRule rule = match.get();
-        if (rule.getFineType() == FineType.PER_DAY) {
-            return rule.getValue().multiply(BigDecimal.valueOf(days));
+        long daysLate = java.time.temporal.ChronoUnit.DAYS.between(dueDate, payDate);
+        BigDecimal totalFine = BigDecimal.ZERO;
+        // If a specific rule exists for this fee type, skip "All Fee Types" rules
+        boolean hasSpecificRule = rules.stream().anyMatch(r ->
+                r.isActive() && r.getFeeTypeId() != 0 && r.getFeeTypeId().equals(due.getFeeTypeId()));
+        for (FineRule rule : rules) {
+            if (!rule.isActive()) continue;
+            if (rule.getFeeTypeId() != 0 && !rule.getFeeTypeId().equals(due.getFeeTypeId())) continue;
+            if (rule.getFeeTypeId() == 0 && hasSpecificRule) continue;
+            long periods;
+            switch (rule.getFrequency()) {
+                case DAILY:
+                    periods = daysLate;
+                    break;
+                case WEEKLY:
+                    periods = (daysLate + 6) / 7;
+                    break;
+                case MONTHLY:
+                    periods = java.time.temporal.ChronoUnit.MONTHS.between(dueDate, payDate);
+                    if (periods < 1) periods = 1;
+                    break;
+                default:
+                    periods = 0;
+            }
+            totalFine = totalFine.add(rule.getValue().multiply(BigDecimal.valueOf(periods)));
         }
-        return rule.getValue();
+        return totalFine;
     }
 
     private static boolean isDiscountApplicable(String applicableOn, Long feeTypeId, Map<Long, FeeTypeEntity> feeTypes) {

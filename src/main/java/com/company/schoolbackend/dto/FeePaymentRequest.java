@@ -8,6 +8,7 @@ public class FeePaymentRequest {
     private String extraDiscount;
     private String extraDiscountReason;
     private String approvedBy;
+    private boolean waiveFine;
 
     public String getStudentId() {
         return studentId;
@@ -63,5 +64,13 @@ public class FeePaymentRequest {
 
     public void setApprovedBy(String approvedBy) {
         this.approvedBy = approvedBy;
+    }
+
+    public boolean isWaiveFine() {
+        return waiveFine;
+    }
+
+    public void setWaiveFine(boolean waiveFine) {
+        this.waiveFine = waiveFine;
     }
 }

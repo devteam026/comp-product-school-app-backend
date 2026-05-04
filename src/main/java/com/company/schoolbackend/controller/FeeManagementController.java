@@ -84,7 +84,7 @@ public class FeeManagementController {
     }
 
     @PostMapping("/dues/generate")
-    public List<FeeDue> generateDues(@RequestBody Map<String, String> request) {
+    public Map<String, Object> generateDues(@RequestBody Map<String, String> request) {
         String classCode = request.get("classCode");
         String month = request.get("month");
         String academicYear = request.get("academicYear");
@@ -149,14 +149,22 @@ public class FeeManagementController {
     }
 
     @PostMapping("/fines")
-    public FineRule createFineRule(@RequestBody FineRule request) {
-        return feeManagementService.saveFineRule(request);
+    public ResponseEntity<?> createFineRule(@RequestBody FineRule request) {
+        try {
+            return ResponseEntity.ok(feeManagementService.saveFineRule(request));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     @PutMapping("/fines/{id}")
-    public FineRule updateFineRule(@PathVariable Long id, @RequestBody FineRule request) {
+    public ResponseEntity<?> updateFineRule(@PathVariable Long id, @RequestBody FineRule request) {
         request.setId(id);
-        return feeManagementService.saveFineRule(request);
+        try {
+            return ResponseEntity.ok(feeManagementService.saveFineRule(request));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     @DeleteMapping("/fines/{id}")
