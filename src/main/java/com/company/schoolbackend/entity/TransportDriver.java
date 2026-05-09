@@ -14,6 +14,9 @@ public class TransportDriver {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "employee_id")
+    private Long employeeId;
+
     @Column(nullable = false)
     private String name;
 
@@ -38,6 +41,14 @@ public class TransportDriver {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getEmployeeId() {
+        return employeeId;
+    }
+
+    public void setEmployeeId(Long employeeId) {
+        this.employeeId = employeeId;
     }
 
     public String getName() {

@@ -9,4 +9,5 @@ public interface TransportDriverRepository extends JpaRepository<TransportDriver
     List<TransportDriver> findByActiveTrueOrderByNameAsc();
     Optional<TransportDriver> findFirstByPhone(String phone);
     Optional<TransportDriver> findFirstByLicenseNoIgnoreCase(String licenseNo);
+    Optional<TransportDriver> findFirstByEmployeeId(Long employeeId);
 }

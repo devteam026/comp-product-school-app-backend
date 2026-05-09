@@ -222,6 +222,12 @@ public class TransportManagementController {
 
     @PostMapping("/drivers")
     public ResponseEntity<?> createDriver(@RequestBody TransportDriver request) {
+        if (request.getEmployeeId() != null) {
+            Optional<TransportDriver> byEmployee = driverRepository.findFirstByEmployeeId(request.getEmployeeId());
+            if (byEmployee.isPresent()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "A driver with this employee ID already exists."));
+            }
+        }
         Optional<TransportDriver> byPhone = driverRepository.findFirstByPhone(request.getPhone());
         if (byPhone.isPresent()) {
             return ResponseEntity.badRequest().body(Map.of("error", "A driver with this phone number already exists."));
@@ -233,6 +239,7 @@ public class TransportManagementController {
             }
         }
         TransportDriver driver = new TransportDriver();
+        driver.setEmployeeId(request.getEmployeeId());
         driver.setName(request.getName());
         driver.setPhone(request.getPhone());
         driver.setAlternatePhone(request.getAlternatePhone());
@@ -244,6 +251,12 @@ public class TransportManagementController {
 
     @PutMapping("/drivers/{id}")
     public ResponseEntity<?> updateDriver(@PathVariable Long id, @RequestBody TransportDriver request) {
+        if (request.getEmployeeId() != null) {
+            Optional<TransportDriver> byEmployee = driverRepository.findFirstByEmployeeId(request.getEmployeeId());
+            if (byEmployee.isPresent() && !byEmployee.get().getId().equals(id)) {
+                return ResponseEntity.badRequest().body(Map.of("error", "A driver with this employee ID already exists."));
+            }
+        }
         Optional<TransportDriver> byPhone = driverRepository.findFirstByPhone(request.getPhone());
         if (byPhone.isPresent() && !byPhone.get().getId().equals(id)) {
             return ResponseEntity.badRequest().body(Map.of("error", "A driver with this phone number already exists."));
@@ -255,6 +268,7 @@ public class TransportManagementController {
             }
         }
         TransportDriver driver = driverRepository.findById(id).orElseThrow();
+        driver.setEmployeeId(request.getEmployeeId());
         driver.setName(request.getName());
         driver.setPhone(request.getPhone());
         driver.setAlternatePhone(request.getAlternatePhone());
