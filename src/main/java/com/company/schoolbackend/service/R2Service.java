@@ -1,5 +1,6 @@
 package com.company.schoolbackend.service;
 
+import com.company.schoolbackend.config.TenantContext;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -72,6 +73,9 @@ public class R2Service {
     }
 
     public String generateObjectKey(String fileName, String customPrefix) {
+        String tenantKey = TenantContext.getTenant();
+        String tenantFolder = (tenantKey != null && !tenantKey.isBlank()) ? tenantKey + "/" : "";
+
         String prefixValue = customPrefix == null || customPrefix.isBlank() ? prefix : customPrefix;
         if (!prefixValue.endsWith("/")) {
             prefixValue = prefixValue + "/";
@@ -83,10 +87,13 @@ public class R2Service {
                 extension = ext.toLowerCase();
             }
         }
-        return prefixValue + UUID.randomUUID() + extension;
+        return tenantFolder + prefixValue + UUID.randomUUID() + extension;
     }
 
     public String generateObjectKey(String fileName) {
+        String tenantKey = TenantContext.getTenant();
+        String tenantFolder = (tenantKey != null && !tenantKey.isBlank()) ? tenantKey + "/" : "";
+
         String extension = ".jpg";
         if (fileName != null && fileName.contains(".")) {
             String ext = fileName.substring(fileName.lastIndexOf("."));
@@ -94,7 +101,7 @@ public class R2Service {
                 extension = ext.toLowerCase();
             }
         }
-        return prefix + UUID.randomUUID() + extension;
+        return tenantFolder + prefix + UUID.randomUUID() + extension;
     }
 
     public String getBucket() {
